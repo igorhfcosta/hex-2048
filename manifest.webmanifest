@@ -1,13 +1,13 @@
 {
-  "name": "HEX 19683 — quebra-cabeça hexagonal",
-  "short_name": "HEX 19683",
-  "description": "Combine potências de 3 em seis direções. Jogue offline.",
+  "name": "HEX 24576 — quebra-cabeça hexagonal",
+  "short_name": "HEX 24576",
+  "description": "Some peças iguais em seis direções e alcance 24.576. Jogue offline.",
   "id": "./",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#0b0e19",
-  "theme_color": "#0b0e19",
+  "background_color": "#080713",
+  "theme_color": "#080713",
   "orientation": "any",
   "icons": [
     {
