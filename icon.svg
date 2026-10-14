@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-<rect width="512" height="512" rx="116" fill="#101526"/>
-<polygon points="256,55 430,155 430,356 256,457 82,356 82,155" fill="#83d8d1" stroke="#b6ffe6" stroke-width="12"/>
-<polygon points="256,96 390,176 390,336 256,415 122,336 122,176" fill="#202b42"/>
+<rect width="512" height="512" rx="116" fill="#080713"/>
+<polygon points="256,55 430,155 430,356 256,457 82,356 82,155" fill="#4ef5d5" stroke="#b6ffe6" stroke-width="12"/>
+<polygon points="256,96 390,176 390,336 256,415 122,336 122,176" fill="#211737"/>
 <text x="256" y="279" text-anchor="middle" font-family="Arial, sans-serif" font-size="112" font-weight="900" fill="#b9ffde">HEX</text>
-<text x="256" y="336" text-anchor="middle" font-family="Arial, sans-serif" font-size="55" font-weight="800" fill="#e5e8ff">19683</text>
+<text x="256" y="336" text-anchor="middle" font-family="Arial, sans-serif" font-size="55" font-weight="800" fill="#e5e8ff">24576</text>
 </svg>
