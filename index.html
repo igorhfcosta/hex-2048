@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#111422" />
+  <meta name="description" content="HEX 2048: combine peças no tabuleiro hexagonal de 19 casas com seis direções." />
+  <title>HEX 2048 · Seis direções, um novo desafio</title>
+  <style>
+    :root { color-scheme: dark; --bg:#0b0e19; --panel:#14182a; --panel2:#1a1f35; --line:#2e3653; --text:#f6f7ff; --muted:#a0abc7; --mint:#85f1c5; --purple:#ac9af9; --gold:#fdd591; }
+    *,*::before,*::after {box-sizing:border-box}
+    html {min-height:100%; background:var(--bg)}
+    body {margin:0; min-height:100vh; min-height:100dvh; font-family:Inter, ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; color:var(--text); background:radial-gradient(ellipse 65% 55% at 8% 0%,#232144 0%,transparent 78%),radial-gradient(ellipse 65% 68% at 100% 80%,#102b31 0%,transparent 72%),var(--bg); overflow-x:hidden}
+    button,select {font:inherit}
+    button {cursor:pointer; -webkit-tap-highlight-color:transparent}
+    button:focus-visible {outline:3px solid var(--mint);outline-offset:3px}
+    .app {max-width:1320px; padding:24px clamp(15px,3vw,38px) 34px;margin:0 auto}
+    header {display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:28px}
+    .brand {display:flex;align-items:center;gap:12px}
+    .brand-mark {width:44px;height:44px;background:linear-gradient(140deg,#8cf4cb,#8d9cff);border-radius:14px;display:grid;place-items:center;box-shadow:0 6px 28px #85f1c533}
+    .brand-mark svg {width:31px;height:31px}
+    .brand-name {font-size:21px;font-weight:900;letter-spacing:-.9px;line-height:1}
+    .brand-name span {color:var(--mint)}
+    .brand-sub {font-size:11px;color:var(--muted);letter-spacing:1.4px;text-transform:uppercase;margin-top:5px;font-weight:750}
+    .header-actions {display:flex;gap:8px;align-items:center}
+    .icon-button {height:41px;width:41px;display:grid;place-items:center;background:#171c30;border:1px solid #303752;color:#d8def4;border-radius:13px;transition:.15s ease}
+    .icon-button:hover {background:#262e49;transform:translateY(-1px)}
+    .icon-button svg {width:20px;height:20px}
+    .hero {margin:0 0 24px}
+    .eyebrow {font-size:11px;letter-spacing:2px;font-weight:800;color:var(--mint);text-transform:uppercase;margin:0 0 10px}
+    h1 {font-size:clamp(30px,4vw,52px);line-height:1.09;letter-spacing:-2px;margin:0;font-weight:850}
+    h1 em {font-style:normal;color:var(--purple)}
+    .intro {color:var(--muted);font-size:clamp(13px,1.4vw,15px);line-height:1.6;margin:11px 0 0;max-width:750px}
+    .layout {display:grid;grid-template-columns:minmax(0,1fr) 294px;gap:20px;align-items:start}
+    .game-shell {background:linear-gradient(145deg,#1b2038 0%,#111626 85%);border:1px solid #303650;border-radius:28px;box-shadow:0 24px 75px #0006;padding:18px}
+    .game-top {display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:15px}
+    .mode-label {font-size:12px;color:#aab4cf;font-weight:800;letter-spacing:.6px;text-transform:uppercase}
+
+    .scoreboard {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-bottom:12px}
+    .score {background:#0d1221;border:1px solid #313951;border-radius:14px;padding:12px 14px;min-width:0}
+    .score small {display:block;font-size:10px;font-weight:850;letter-spacing:1px;color:#9ba9c9;text-transform:uppercase}
+    .score strong {font-size:clamp(19px,2.7vw,26px);font-weight:900;letter-spacing:-1px;font-variant-numeric:tabular-nums;line-height:1.35}
+    .score.best strong {color:var(--gold)}
+    .score.moves strong {color:#b3a5f9}
+    .board-wrap {background:radial-gradient(ellipse at 50% 47%,#202841 0%,#11192c 72%);border:1px solid #303950;border-radius:20px;position:relative;overflow:hidden;display:flex;justify-content:center;align-items:center;isolation:isolate}
+    #board {width:100%;display:block;aspect-ratio:1/1;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;cursor:grab}
+    #board:active {cursor:grabbing}
+    .board-note {display:flex;justify-content:space-between;align-items:center;gap:10px;margin:12px 3px 0;color:#a8b4d0;font-size:12px;min-height:20px}
+    .board-note strong {color:var(--mint)}
+    .side {display:flex;flex-direction:column;gap:16px}
+    .panel {background:linear-gradient(160deg,#1a2035,#111625);border:1px solid #303650;border-radius:23px;padding:20px}
+    .panel-title {font-size:14px;font-weight:850;margin:0 0 6px;letter-spacing:-.15px}
+    .panel-sub {font-size:12px;color:var(--muted);line-height:1.5;margin:0 0 14px}
+    .direction-wheel {width:min(100%,224px);height:224px;margin:0 auto 3px;position:relative}
+    .direction-wheel::before {content:"";border-radius:50%;position:absolute;inset:24px;border:1px dashed #394460;background:radial-gradient(circle,#1d2c3b 0%,#172033 62%,#141b2c 100%)}
+    .wheel-center {position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);display:grid;place-items:center;text-align:center;pointer-events:none;width:77px;line-height:1.25}
+    .wheel-center b {font-size:13px;color:#d5e0f4}
+    .wheel-center span {font-size:10px;color:#9babca;margin-top:4px}
+    .direction {position:absolute;display:grid;place-items:center;width:53px;height:53px;transform:translate(-50%,-50%);border:1px solid #485873;border-radius:17px;background:#26304a;color:#e6edff;box-shadow:0 5px 12px #05091780;transition:background .12s,border-color .12s,scale .12s;touch-action:manipulation}
+    .direction:hover,.direction:active {background:#375b62;border-color:var(--mint);scale:1.07}
+    .direction svg {width:24px;height:24px}
+    .direction .key {position:absolute;right:4px;bottom:2px;color:#a5b6ce;font-size:9px;font-weight:850}
+    .game-buttons {display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}
+    .game-btn {min-height:46px;border-radius:13px;font-size:13px;font-weight:850;display:flex;gap:7px;align-items:center;justify-content:center}
+    .primary {background:var(--mint);border:1px solid var(--mint);color:#11222d}
+    .primary:hover {background:#a6fbe0}
+    .secondary {background:#252c43;border:1px solid #3a4562;color:#edf1ff}
+    .secondary:hover:not(:disabled) {background:#323d5c}
+    .secondary:disabled {opacity:.38;cursor:not-allowed}
+    .mini-icon {width:16px;height:16px}
+    .rules {border-top:1px solid #303951;padding-top:15px;margin-top:15px}
+    .rule-row {display:flex;gap:9px;color:#afbad5;font-size:12px;line-height:1.65;margin-top:8px}
+    .rule-dot {width:6px;height:6px;background:var(--mint);border-radius:50%;margin:7px 0 0;flex-shrink:0}
+    .fact {display:flex;gap:12px;align-items:center;padding:13px 15px;background:#131c2e;border:1px solid #2f4054;border-radius:17px}
+    .fact-graphic {color:var(--purple);font-size:31px;font-weight:900;line-height:1}
+    .fact p {margin:0;color:#b3c0d8;font-size:12px;line-height:1.5}
+    .fact b {color:white}
+    footer {margin-top:25px;display:flex;gap:10px;justify-content:space-between;flex-wrap:wrap;color:#7e8eab;font-size:11px}
+    kbd {background:#242c42;color:#e1e8f7;padding:2px 6px;border:1px solid #43506b;border-radius:5px;font:700 10px/1.4 inherit;white-space:nowrap}
+    .toast {position:fixed;left:50%;bottom:23px;transform:translate(-50%,22px);background:#223b40;border:1px solid #75d5bb;color:#effff7;font-size:13px;font-weight:700;padding:11px 19px;border-radius:12px;box-shadow:0 12px 30px #0007;z-index:9;opacity:0;pointer-events:none;transition:transform .22s,opacity .22s;max-width:min(90vw,500px);text-align:center}
+    .toast.show {opacity:1;transform:translate(-50%,0)}
+    .overlay {position:fixed;inset:0;z-index:20;background:#050813c9;backdrop-filter:blur(9px);display:flex;align-items:center;justify-content:center;padding:18px}
+    .overlay.hidden {display:none}
+    .modal {background:linear-gradient(155deg,#242d46,#151a2e);border:1px solid #52617b;border-radius:25px;padding:28px;box-shadow:0 30px 100px #0009;max-width:440px;width:100%;text-align:center}
+    .modal-graphic {width:69px;height:69px;display:grid;place-items:center;margin:0 auto 15px;background:#293f48;color:var(--mint);font-size:34px;border-radius:21px}
+    .modal h2 {font-size:25px;letter-spacing:-.8px;margin:0 0 10px}
+    .modal p {font-size:14px;line-height:1.6;color:#b9c5df;margin:0 0 18px}
+    .modal-actions {display:flex;gap:10px;justify-content:center}
+    .modal-actions button {padding:12px 17px;border-radius:12px;font-weight:800;border:1px solid #485874}
+    .modal-actions .primary {border-color:var(--mint)}
+    .help-list {text-align:left;font-size:13px;line-height:1.65;color:#bcc8df;margin:0 0 20px;padding-left:18px}
+    .help-list li {margin:8px 0}
+    .help-list b {color:#f2f5ff}
+    #cell-layer .cell-bg {fill:#26314a;stroke:#41516a;stroke-width:1.4}
+    #board .tile {filter:drop-shadow(0 4px 3px #050a1f48)}
+    #board .tile .tile-shape {stroke:#ffffff25;stroke-width:1.2}
+    #board .tile-value {font-weight:900;text-anchor:middle;dominant-baseline:central;font-family:Inter,system-ui,sans-serif;letter-spacing:-1.3px;pointer-events:none}
+    #board .tile-label {font-weight:700;text-anchor:middle;dominant-baseline:central;font-family:Inter,system-ui,sans-serif;pointer-events:none}
+    #board .spawn {animation:popIn .22s cubic-bezier(.1,.6,.3,1.65)}
+    #board .merged {animation:mergeIn .28s cubic-bezier(.17,.7,.4,1.2)}
+    @keyframes popIn {from{opacity:0;scale:.1}to{opacity:1;scale:1}}
+    @keyframes mergeIn {0%{scale:.9}50%{scale:1.16}100%{scale:1}}
+    @media(min-width:1020px){.layout{grid-template-columns:minmax(0,1fr) 308px}.game-shell{padding:22px}.board-wrap{max-height:690px}#board{max-height:650px}}
+    @media(max-width:860px){.layout{grid-template-columns:minmax(0,1fr)}.side{display:grid;grid-template-columns:1fr 1fr;align-items:start}.panel{height:100%}.fact{grid-column:1/-1}.hero{margin-bottom:20px}}
+    @media(max-width:560px){.app{padding:16px 12px 25px}header{margin-bottom:22px}.brand-mark{width:38px;height:38px;border-radius:12px}.brand-name{font-size:19px}.brand-sub{font-size:9px}.header-actions .icon-button{height:36px;width:36px}.hero h1{font-size:32px;letter-spacing:-1.4px}.intro{font-size:12.5px}.game-shell{padding:11px;border-radius:20px}.game-top{margin-bottom:12px}.score{padding:9px 10px;border-radius:11px}.score strong{font-size:21px}.score small{font-size:9px}.board-wrap{border-radius:15px}.board-note{font-size:11px}.side{grid-template-columns:1fr}.panel{padding:17px}.direction-wheel{height:207px;width:207px}.fact{grid-column:auto}footer{font-size:10px}.modal{padding:23px}}
+    @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+  
+    .game-top {margin-bottom:15px; gap:10px}
+    .geometry-tag {display:inline-flex;align-items:center;gap:8px;font-size:11px;font-weight:850;letter-spacing:.55px;color:var(--mint);text-transform:uppercase}
+    .geometry-tag svg {width:20px;height:20px}
+    .geometry-detail {color:#a6b4cd;font-size:11px;font-weight:700;background:#111b2b;border:1px solid #32445a;padding:8px 11px;border-radius:10px}
+    @media(max-width:560px){.geometry-detail{font-size:10px;padding:7px 9px}}
+
+    /* Controle radial contextual: aparece após segurar o tabuleiro. */
+    .radial-touch {position:fixed;top:0;left:0;width:192px;height:192px;z-index:35;pointer-events:none;visibility:hidden;opacity:0;transform:translate(-50%,-50%) scale(.78);transition:opacity .14s ease, transform .18s ease, visibility .14s}
+    .radial-touch.visible {opacity:1;visibility:visible;transform:translate(-50%,-50%) scale(1)}
+    .radial-touch::before {content:"";position:absolute;inset:2px;border-radius:50%;background:radial-gradient(circle at 50% 50%,#1a2933e8 0%,#20384cef 46%,#16243aea 72%,#16243a9e 100%);border:1px solid #8cf4c899;box-shadow:0 18px 60px #000b,0 0 0 7px #85f1c516, inset 0 0 40px #70c9c71a;backdrop-filter:blur(9px)}
+    .radial-touch-center {position:absolute;top:50%;left:50%;width:58px;height:58px;transform:translate(-50%,-50%);border-radius:50%;border:1px solid #708e9a88;background:#0e1c29;display:flex;align-items:center;justify-content:center;flex-direction:column;color:#c0eadf;font-size:10px;font-weight:850;letter-spacing:.4px;text-transform:uppercase;box-shadow:0 3px 18px #0006}
+    .radial-touch-center span:first-child {font-size:20px;line-height:1;color:var(--mint)}
+    .radial-touch-center span:last-child {font-size:8px;margin-top:4px}
+    .radial-arrow {position:absolute;top:50%;left:50%;width:45px;height:45px;border:1px solid #657b93;border-radius:14px;background:#273950e8;display:flex;align-items:center;justify-content:center;color:#e8f5ff;box-shadow:0 4px 10px #02091677;transition:background .09s,box-shadow .09s,border-color .09s}
+    .radial-arrow svg {width:25px;height:25px}
+    .radial-arrow.active {border-color:#c2ffe9;background:#68ddba;color:#10252c;box-shadow:0 0 20px #85f1c58a;scale:1.1}
+    .radial-touch.committed .radial-touch-center {background:#2f7567;border-color:#93f0c8;color:#fff}
+    .mobile-hint {display:none;align-items:center;gap:12px;padding:12px;border:1px solid #33495d;border-radius:13px;background:#182b39;color:#c3d9e0;font-size:12px;line-height:1.5;margin-bottom:15px}
+    .mobile-hint-icon {flex:0 0 35px;width:35px;height:35px;display:grid;place-items:center;border-radius:12px;background:#2f4f58;color:#a4f7d9;font-size:25px}
+    @media(max-width:760px) {.direction-wheel {display:none} .mobile-hint {display:flex}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true"><svg viewBox="0 0 40 40" fill="none"><path d="M20 3 35 11.5V28.5L20 37 5 28.5V11.5Z" fill="#14243A"/><path d="M20 3v34M5 11.5 35 28.5M35 11.5 5 28.5" stroke="#90EDC9" stroke-width="1.5" opacity=".65"/></svg></div>
+      <div><div class="brand-name">HEX <span>2048</span></div><div class="brand-sub">Uma nova dimensão do 2048</div></div>
+    </div>
+    <div class="header-actions">
+      <button class="icon-button" id="sound-btn" aria-label="Alternar som" title="Alternar som"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4V5Z"/><path class="sound-waves" d="M15 9a5 5 0 0 1 0 6M18 6a9 9 0 0 1 0 12"/></svg></button>
+      <button class="icon-button" id="help-btn" aria-label="Como jogar" title="Como jogar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 4.1 2c-1.15.85-1.6 1.3-1.6 2.5M12 17h.01"/></svg></button>
+    </div>
+  </header>
+  <section class="hero"><p class="eyebrow">O clássico, reinventado</p><h1>Seis direções.<br/><em>Um novo desafio.</em></h1><p class="intro">Deslize pelos hexágonos, combine números iguais e alcance 2048. Agora cada movimento exige pensar em seis direções.</p></section>
+  <main class="layout">
+    <section class="game-shell" aria-label="Área do jogo">
+      <div class="game-top"><div class="geometry-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 21 7v10l-9 5-9-5V7Z"/></svg> Tabuleiro hexagonal</div><div class="geometry-detail">19 casas · 6 direções</div></div>
+      <div class="scoreboard" aria-label="Placar"><div class="score"><small>Pontuação</small><strong id="score">0</strong></div><div class="score best"><small>Recorde</small><strong id="best">0</strong></div><div class="score moves"><small>Jogadas</small><strong id="moves">0</strong></div></div>
+      <div class="board-wrap"><svg id="board" viewBox="0 0 600 600" role="img" aria-label="Tabuleiro hexagonal do jogo 2048"><title>Tabuleiro interativo do HEX 2048</title><defs><pattern id="boardDots" width="25" height="25" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1" fill="#d9e7ff" opacity=".07"/></pattern></defs><rect x="0" y="0" width="600" height="600" fill="url(#boardDots)"/><g id="decoration-layer"></g><g id="cell-layer"></g><g id="tile-layer"></g></svg></div>
+      <div class="board-note"><span><strong>Teclado:</strong> 7, 9, 6, 3, 1 e 4 · <strong>Celular:</strong> toque e segure.</span><span id="tile-count">2 peças</span></div>
+    </section>
+    <aside class="side">
+      <section class="panel"><h2 class="panel-title">Controle o movimento</h2><p class="panel-sub">No teclado numérico, use 7/9 para cima, 4/6 para os lados e 1/3 para baixo. No celular, toque e segure o tabuleiro; depois arraste o dedo até uma seta.</p><div class="mobile-hint" aria-hidden="true"><span class="mobile-hint-icon">✥</span><span>Segure o dedo sobre o tabuleiro para abrir o controle flutuante de seis direções.</span></div><div class="direction-wheel" id="direction-wheel"><div class="wheel-center"><b>6 lados</b><span>direções</span></div></div><div class="game-buttons"><button id="restart-btn" class="game-btn primary"><svg class="mini-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 11a9 9 0 1 1 3 7M3 4v7h7"/></svg> Novo jogo</button><button id="undo-btn" class="game-btn secondary" disabled><svg class="mini-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 14 4 9l5-5M4 9h10a6 6 0 0 1 0 12h-2"/></svg> Desfazer</button></div><div class="rules"><h3 class="panel-title" style="font-size:12px;margin:0 0 7px">COMO VENCER</h3><div class="rule-row"><i class="rule-dot"></i><span>Mova todas as peças na direção selecionada.</span></div><div class="rule-row"><i class="rule-dot"></i><span>Peças de mesmo valor se unem: <b style="color:white">2 + 2 = 4</b>.</span></div><div class="rule-row"><i class="rule-dot"></i><span>Alcance <b style="color:#85f1c5">2048</b> para vencer. Você pode continuar depois!</span></div></div></section>
+      <section class="fact"><div class="fact-graphic" aria-hidden="true">⬡</div><p><b>Uma nova forma de jogar</b><br>19 casas hexagonais e seis eixos para criar novas estratégias.</p></section>
+    </aside>
+  </main>
+  <footer><span>HEX 2048 · Inspirado no puzzle clássico de fusões</span><span>Funciona offline · Seu progresso fica salvo neste navegador</span></footer>
+</div>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<div class="radial-touch" id="radial-touch" aria-hidden="true"><div class="radial-touch-center" id="radial-center"><span>⬡</span><span>Arraste</span></div></div>
+<div id="overlay" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title"><div class="modal"><div class="modal-graphic" id="modal-icon">✦</div><h2 id="modal-title">Como jogar</h2><p id="modal-copy"></p><ul id="modal-help" class="help-list" hidden></ul><div class="modal-actions" id="modal-actions"></div></div></div>
+<script>
+(()=>{'use strict';
+  const NS='http://www.w3.org/2000/svg';
+  const storageKey='hex2048_v1', previousStorageKey='poly2048_v3';
+  const config={angles:[-120,-60,0,60,120,180],labels:['Noroeste','Nordeste','Leste','Sudeste','Sudoeste','Oeste'],keys:['7','9','6','3','1','4']};
+  const keyDirections=Object.fromEntries(config.keys.map((key,index)=>[key,index]));
+  const vectors=[[0,-1],[1,-1],[1,0],[0,1],[-1,1],[-1,0]];
+  const svg=document.getElementById('board'),cellsLayer=document.getElementById('cell-layer'),tileLayer=document.getElementById('tile-layer'),deco=document.getElementById('decoration-layer');
+  const scoreEl=document.getElementById('score'),bestEl=document.getElementById('best'),movesEl=document.getElementById('moves'),undoBtn=document.getElementById('undo-btn');
+  const wheel=document.getElementById('direction-wheel'),overlay=document.getElementById('overlay'),toastEl=document.getElementById('toast');
+  let session=null,best=0,soundOn=false,audioContext=null,animationBusy=false,modalOpen=false,toastTimer=null;
+  const coords=[];
+  function node(name,attrs={},text){const el=document.createElementNS(NS,name);for(const [k,v] of Object.entries(attrs))el.setAttribute(k,String(v));if(text!==undefined)el.textContent=text;return el;}
+  const HR=53;
+  for(let q=-2;q<=2;q++)for(let r=-2;r<=2;r++)if(Math.abs(q+r)<=2)coords.push({id:`${q},${r}`,q,r,x:300+Math.sqrt(3)*HR*(q+r/2),y:300+1.5*HR*r});
+  const cellMap=Object.fromEntries(coords.map(p=>[p.id,p]));
+  function lanesFor(d){
+    const parts=new Map(), angle=config.angles[d]*Math.PI/180,dx=Math.cos(angle),dy=Math.sin(angle);
+    const [dq,dr]=vectors[d];
+    for(const p of coords){
+      const lane=dr===0?`r${p.r}`:dq===0?`q${p.q}`:`s${p.q+p.r}`;
+      if(!parts.has(lane))parts.set(lane,[]);
+      parts.get(lane).push(p);
+    }
+    return [...parts.values()].map(line=>line.sort((a,b)=>(b.x-a.x)*dx+(b.y-a.y)*dy).map(p=>p.id));
+  }
+  const LINES=config.angles.map((_,d)=>lanesFor(d));
+  function validCells(s){return s?.cells&&coords.every(p=>Number.isSafeInteger(s.cells[p.id])&&s.cells[p.id]>=0&&(s.cells[p.id]===0||Number.isInteger(Math.log2(s.cells[p.id]))));}
+  function safeSave(){try{localStorage.setItem(storageKey,JSON.stringify({session,best,soundOn}));}catch(e){}}
+  function readStorage(){
+    try{
+      const raw=JSON.parse(localStorage.getItem(storageKey));
+      const legacy=raw?null:JSON.parse(localStorage.getItem(previousStorageKey));
+      const stored=raw?raw.session:legacy?.sessions?.hex;
+      if(validCells(stored))session={cells:Object.fromEntries(coords.map(p=>[p.id,stored.cells[p.id]])),score:Math.max(0,Number(stored.score)||0),moves:Math.max(0,Number(stored.moves)||0),won:!!stored.won,undo:null};
+      const oldBest=raw?.best??legacy?.bests?.hex;
+      if(Number.isFinite(oldBest))best=Math.max(0,Math.floor(oldBest));
+      const oldSound=raw?.soundOn??legacy?.soundOn;
+      if(typeof oldSound==='boolean')soundOn=oldSound;
+    }catch(e){}
+  }
+  function emptyCells(){return Object.fromEntries(coords.map(p=>[p.id,0]));}
+  function spawn(cells){const spaces=coords.map(p=>p.id).filter(id=>!cells[id]);if(!spaces.length)return null;const id=spaces[Math.floor(Math.random()*spaces.length)];cells[id]=Math.random()<.9?2:4;return id;}
+  function makeSession(){const cells=emptyCells();spawn(cells);spawn(cells);return {cells,score:0,moves:0,won:false,undo:null};}
+  function simulate(cells,d){
+    const next={...cells};let gained=0,changed=false;const mergedIds=[],paths=[];
+    for(const lane of LINES[d]){
+      const moving=lane.filter(id=>cells[id]!==0).map(id=>({id,value:cells[id]}));
+      const results=[];
+      for(let i=0;i<moving.length;i++){
+        const current=moving[i],target=lane[results.length];
+        if(i+1<moving.length&&moving[i+1].value===current.value){
+          const other=moving[++i];results.push(current.value*2);gained+=current.value*2;mergedIds.push(target);
+          paths.push({source:current.id,target,value:current.value},{source:other.id,target,value:other.value});
+        }else{results.push(current.value);paths.push({source:current.id,target,value:current.value});}
+      }
+      for(let i=0;i<lane.length;i++){const value=results[i]||0;if(next[lane[i]]!==value)changed=true;next[lane[i]]=value;}
+    }
+    return {next,gained,changed,mergedIds,paths};
+  }
+  function legalMove(cells){return LINES.some((_,d)=>simulate(cells,d).changed);}
+  const colors={2:['#e5f8ee','#193329'],4:['#baf1d6','#153c31'],8:['#83d8d1','#153b43'],16:['#77b9fa','#152f50'],32:['#b09df9','#29224e'],64:['#d98af4','#42254f'],128:['#f5a5bd','#522b44'],256:['#f9b48e','#5d3028'],512:['#ffce7c','#56381b'],1024:['#e8e47b','#3f421f'],2048:['#fef0a4','#5c451b']};
+  function theme(value){return colors[value]||['#ffd77d','#55401a'];}
+  function polyPoints(radius,offset=-90){return Array.from({length:6},(_,k)=>{const a=(offset+k*60)*Math.PI/180;return `${(Math.cos(a)*radius).toFixed(3)},${(Math.sin(a)*radius).toFixed(3)}`;}).join(' ');}
+  function shape(fill,isBg=false){return node('polygon',{points:polyPoints(51),fill,class:isBg?'cell-bg':'tile-shape','stroke-linejoin':'round'});}
+  function tileElement(p,value,cls=''){
+    const [bg,fg]=theme(value),g=node('g',{class:`tile ${cls}`.trim(),style:`transform-origin:${p.x}px ${p.y}px`});
+    g.setAttribute('transform',`translate(${p.x} ${p.y})`);
+    g.appendChild(shape(bg));
+    const digits=String(value).length,maxFont=Math.max(12,35-Math.max(0,digits-2)*6);
+    g.appendChild(node('text',{'class':'tile-value',x:0,y:1,'font-size':maxFont,fill:fg},String(value)));
+    return g;
+  }
+  function drawBoard(spawned=null,merged=[]){
+    if(!session)return;
+    cellsLayer.replaceChildren();tileLayer.replaceChildren();deco.replaceChildren();
+    const outer=polyPoints(265).split(' ').map(pair=>{const [x,y]=pair.split(',').map(Number);return `${x+300},${y+300}`}).join(' ');
+    deco.appendChild(node('polygon',{points:outer,fill:'#1b2a3e',stroke:'#3d5971','stroke-width':2}));
+    for(const p of coords){const group=node('g',{transform:`translate(${p.x} ${p.y})`});group.appendChild(shape('',true));cellsLayer.appendChild(group);const value=session.cells[p.id];if(value)tileLayer.appendChild(tileElement(p,value,p.id===spawned?'spawn':merged.includes(p.id)?'merged':''));}
+    scoreEl.textContent=session.score.toLocaleString('pt-BR');bestEl.textContent=best.toLocaleString('pt-BR');movesEl.textContent=session.moves.toLocaleString('pt-BR');undoBtn.disabled=!session.undo;
+    const n=Object.values(session.cells).filter(Boolean).length;document.getElementById('tile-count').textContent=n===1?'1 peça':`${n} peças`;
+  }
+  function sound(frequency=450,type='move'){
+    if(!soundOn)return;
+    try{audioContext??=new (window.AudioContext||window.webkitAudioContext)();if(audioContext.state==='suspended')audioContext.resume();
+      const o=audioContext.createOscillator(),g=audioContext.createGain(),now=audioContext.currentTime;o.type='sine';o.frequency.setValueAtTime(frequency,now);o.frequency.exponentialRampToValueAtTime(type==='merge'?frequency*1.5:frequency*.85,now+.085);g.gain.setValueAtTime(.045,now);g.gain.exponentialRampToValueAtTime(.0001,now+.13);o.connect(g).connect(audioContext.destination);o.start(now);o.stop(now+.14);
+    }catch(e){}
+  }
+  function toast(message){clearTimeout(toastTimer);toastEl.textContent=message;toastEl.classList.add('show');toastTimer=setTimeout(()=>toastEl.classList.remove('show'),2400);}
+  function move(d){
+    if(animationBusy||modalOpen||d<0||d>5)return;
+    const out=simulate(session.cells,d);if(!out.changed)return;
+    session.undo={cells:{...session.cells},score:session.score,moves:session.moves,won:session.won};
+    session.cells=out.next;session.score+=out.gained;session.moves++;
+    if(session.score>best)best=session.score;
+    animationBusy=true;sound(out.gained?555:350,out.gained?'merge':'move');
+    tileLayer.replaceChildren();
+    for(const path of out.paths){const src=cellMap[path.source],dst=cellMap[path.target],piece=tileElement(src,path.value);tileLayer.appendChild(piece);
+      if(path.source!==path.target){const x=dst.x-src.x,y=dst.y-src.y,mover=node('g');while(piece.firstChild)mover.appendChild(piece.firstChild);piece.appendChild(mover);
+        try{mover.animate([{transform:'translate(0px,0px)'},{transform:`translate(${x}px,${y}px)`}],{duration:155,easing:'cubic-bezier(.28,.65,.44,1)',fill:'forwards'});}catch(e){}
+      }
+    }
+    setTimeout(()=>{const created=spawn(session.cells);drawBoard(created,out.mergedIds);safeSave();animationBusy=false;
+      if(!session.won&&Object.values(session.cells).some(v=>v>=2048)){session.won=true;safeSave();sound(850,'merge');openModal('won');}
+      else if(!legalMove(session.cells))openModal('lost');
+    },160);
+  }
+  function controlArrow(){return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20V4m0 0-7 7m7-7 7 7"/></svg>';}
+  function makeControls(){
+    wheel.querySelectorAll('.direction').forEach(el=>el.remove());const center=wheel.getBoundingClientRect().width/2||112;
+    config.angles.forEach((angle,i)=>{const button=document.createElement('button');button.className='direction';const rad=angle*Math.PI/180,radius=center-30;
+      button.style.left=`${center+radius*Math.cos(rad)}px`;button.style.top=`${center+radius*Math.sin(rad)}px`;
+      button.innerHTML=`<span style="display:flex;transform:rotate(${angle+90}deg)">${controlArrow()}</span><span class="key">${config.keys[i]}</span>`;
+      button.setAttribute('aria-label',`Mover para ${config.labels[i]}`);button.title=`${config.labels[i]} (tecla ${config.keys[i]})`;
+      button.addEventListener('click',()=>move(i));wheel.appendChild(button);
+    });
+  }
+  function resetGame(){session=makeSession();drawBoard();safeSave();toast('Nova partida iniciada.');}
+  function undo(){if(animationBusy||modalOpen||!session.undo)return;const old=session.undo;session.cells={...old.cells};session.score=old.score;session.moves=old.moves;session.won=old.won;session.undo=null;drawBoard();safeSave();toast('Última jogada desfeita.');}
+  function closeModal(){modalOpen=false;overlay.classList.add('hidden');document.getElementById('help-btn').focus();}
+  function openModal(kind){
+    modalOpen=true;const title=document.getElementById('modal-title'),icon=document.getElementById('modal-icon'),copy=document.getElementById('modal-copy'),help=document.getElementById('modal-help'),actions=document.getElementById('modal-actions');
+    actions.replaceChildren();help.hidden=true;help.innerHTML='';let heading='',message='',symbol='✦',buttons=[];
+    if(kind==='help'){
+      heading='Como jogar';symbol='?';message='Junte peças iguais e alcance 2048 em um tabuleiro hexagonal de 19 casas.';
+      help.hidden=false;help.innerHTML='<li><b>Teclado numérico:</b> 7 = noroeste; 9 = nordeste; 6 = leste; 3 = sudeste; 1 = sudoeste; 4 = oeste. Também funcionam os números da fileira superior.</li><li><b>Celular:</b> toque e segure o tabuleiro para mostrar as seis setas ao redor do dedo. Arraste na direção desejada para mover as peças. Soltar sem arrastar cancela a ação.</li><li>Um gesto rápido de deslizar também funciona no tabuleiro.</li><li>Duas peças iguais se fundem uma única vez por movimento. Uma peça nova surge após cada movimento válido.</li><li>Use <b>Desfazer</b> para voltar a última jogada. Seu progresso e recorde ficam salvos neste navegador.</li>';
+      buttons=[['Entendi',closeModal,'primary']];
+    }else if(kind==='restart'){
+      heading='Começar outra partida?';symbol='↻';message='Seu progresso atual será reiniciado, mas seu recorde será mantido.';
+      buttons=[['Cancelar',closeModal,'secondary'],['Reiniciar',()=>{closeModal();resetGame();},'primary']];
+    }else if(kind==='won'){
+      heading='Você chegou a 2048!';symbol='★';message=`Você alcançou o objetivo e marcou ${session.score.toLocaleString('pt-BR')} pontos. Pode continuar jogando!`;
+      buttons=[['Continuar jogando',closeModal,'primary'],['Novo jogo',()=>{closeModal();resetGame();},'secondary']];
+    }else if(kind==='lost'){
+      heading='Fim de jogo';symbol='◆';message=`Sem movimentos disponíveis. Você fez ${session.score.toLocaleString('pt-BR')} pontos em ${session.moves} jogadas.`;
+      buttons=[['Novo jogo',()=>{closeModal();resetGame();},'primary'],['Ver tabuleiro',closeModal,'secondary']];
+    }
+    title.textContent=heading;icon.textContent=symbol;copy.textContent=message;
+    buttons.forEach(([name,action,cls])=>{const b=document.createElement('button');b.className=cls;b.textContent=name;b.addEventListener('click',action);actions.appendChild(b);});
+    overlay.classList.remove('hidden');actions.querySelector('button')?.focus();
+  }
+  function closestDirection(dx,dy){const angle=Math.atan2(dy,dx)*180/Math.PI;let bestIndex=0,closest=Infinity;config.angles.forEach((d,i)=>{const distance=Math.abs(((angle-d+540)%360)-180);if(distance<closest){closest=distance;bestIndex=i;}});return bestIndex;}
+  // A interface móvel mostra o controle após uma breve pressão. Um único
+  // movimento é disparado ao cruzar o raio de seleção; soltar sem arrastar cancela.
+  const radial=document.getElementById('radial-touch'),radialCenter=document.getElementById('radial-center');
+  const radialArrows=[];
+  config.angles.forEach((angle,index)=>{
+    const target=document.createElement('div');target.className='radial-arrow';
+    const rad=angle*Math.PI/180;
+    target.style.transform=`translate(-50%,-50%) translate(${Math.cos(rad)*70}px,${Math.sin(rad)*70}px)`;
+    target.innerHTML=`<span style="display:flex;transform:rotate(${angle+90}deg)">${controlArrow()}</span>`;
+    radial.appendChild(target);radialArrows.push(target);
+  });
+  let pointerStart=null;
+  function showRadial(state){
+    const margin=100;
+    radial.style.left=`${Math.max(margin,Math.min(window.innerWidth-margin,state.x))}px`;
+    radial.style.top=`${Math.max(margin,Math.min(window.innerHeight-margin,state.y))}px`;
+    radial.classList.remove('committed');radialCenter.lastElementChild.textContent='Arraste';
+    radialArrows.forEach(arrow=>arrow.classList.remove('active'));
+    radial.classList.add('visible');state.visible=true;
+  }
+  function hideRadial(){radial.classList.remove('visible','committed');radialArrows.forEach(arrow=>arrow.classList.remove('active'));}
+  function releasePointer(){
+    if(pointerStart?.holdTimer)clearTimeout(pointerStart.holdTimer);
+    if(pointerStart&&svg.hasPointerCapture?.(pointerStart.id))try{svg.releasePointerCapture(pointerStart.id)}catch(_){}
+    pointerStart=null;hideRadial();
+  }
+  svg.addEventListener('contextmenu',e=>e.preventDefault());
+  svg.addEventListener('pointerdown',e=>{
+    if(modalOpen||animationBusy||pointerStart||!e.isPrimary)return;
+    const state={id:e.pointerId,x:e.clientX,y:e.clientY,visible:false,moved:false,committed:false,holdTimer:null};
+    pointerStart=state;
+    try{svg.setPointerCapture(e.pointerId)}catch(_){}
+    state.holdTimer=setTimeout(()=>{if(pointerStart===state&&!state.moved&&!state.committed)showRadial(state);},185);
+  });
+  svg.addEventListener('pointermove',e=>{
+    const state=pointerStart;
+    if(!state||state.id!==e.pointerId)return;
+    const dx=e.clientX-state.x,dy=e.clientY-state.y,distance=Math.hypot(dx,dy);
+    if(!state.visible){if(distance>14){state.moved=true;clearTimeout(state.holdTimer);}return;}
+    if(state.committed)return;
+    const direction=closestDirection(dx,dy);
+    radialArrows.forEach((arrow,index)=>arrow.classList.toggle('active',distance>17&&index===direction));
+    if(distance>=49){
+      state.committed=true;
+      radial.classList.add('committed');radialCenter.lastElementChild.textContent='Movido';
+      move(direction);
+    }
+  });
+  svg.addEventListener('pointerup',e=>{
+    const state=pointerStart;
+    if(!state||state.id!==e.pointerId)return;
+    const dx=e.clientX-state.x,dy=e.clientY-state.y;
+    if(!state.committed&&Math.hypot(dx,dy)>25)move(closestDirection(dx,dy));
+    releasePointer();
+  });
+  svg.addEventListener('pointercancel',releasePointer);
+  window.addEventListener('blur',releasePointer);
+  document.addEventListener('keydown',e=>{
+    const tag=document.activeElement?.tagName?.toLowerCase();if(tag==='input'||tag==='textarea'||tag==='select')return;
+    if(e.key==='Escape'&&modalOpen){closeModal();return;}if(modalOpen)return;
+    if(e.key.toLowerCase()==='r'){e.preventDefault();openModal('restart');return;}
+    if(e.key.toLowerCase()==='u'){e.preventDefault();undo();return;}
+    // Usa event.code primeiro: funciona inclusive com Num Lock desligado.
+    const number=e.code?.startsWith('Numpad')?e.code.slice(6):e.key;
+    if(Object.hasOwn(keyDirections,number)){
+      e.preventDefault();move(keyDirections[number]);
+    }
+  });
+  document.getElementById('restart-btn').addEventListener('click',()=>openModal('restart'));
+  undoBtn.addEventListener('click',undo);
+  document.getElementById('help-btn').addEventListener('click',()=>openModal('help'));
+  document.getElementById('sound-btn').addEventListener('click',()=>{soundOn=!soundOn;document.querySelectorAll('.sound-waves').forEach(el=>el.style.opacity=soundOn?'1':'.18');safeSave();toast(soundOn?'Som ativado.':'Som desativado.');if(soundOn)sound(525);});
+  overlay.addEventListener('click',event=>{if(event.target===overlay)closeModal();});
+  readStorage();if(!session)session=makeSession();if(best<session.score)best=session.score;
+  document.querySelectorAll('.sound-waves').forEach(el=>el.style.opacity=soundOn?'1':'.18');
+  makeControls();drawBoard();safeSave();window.addEventListener('resize',makeControls);
+})();
+</script>
+</body>
+</html>
