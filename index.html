@@ -4,6 +4,10 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <meta name="theme-color" content="#0b0e19" />
+<link rel="manifest" href="./manifest.webmanifest" />
+<link rel="icon" type="image/svg+xml" href="./icon.svg" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="description" content="HEX 19683: combine potências de 3 em 19 casas hexagonais e seis direções até atingir 19.683." />
 <title>HEX 19683 · Jogo de fusão hexagonal</title>
 <style>
@@ -24,6 +28,7 @@ button:focus-visible{outline:2px solid var(--mint);outline-offset:3px}
 .variants{display:flex;align-items:center;justify-content:center;gap:5px;width:100%;flex-wrap:wrap}
 .variants select,.variants button{appearance:none;color:var(--text);background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:5px 7px;font-size:clamp(9px,2.3vw,12px);font-weight:700;min-height:29px}
 .variants button:hover,.variants select:focus-visible{border-color:var(--mint)}
+.variants button[hidden]{display:none!important}
 body[data-theme="light"]{--bg:#f5f2eb;--panel:#eee9e0;--panel2:#e5e0d8;--line:#c8bfb3;--text:#302c36;--muted:#67616a;--mint:#257f6b;--purple:#6a4ac1;--gold:#a85d20;background:#f5f2eb}
 body[data-theme="light"] .board-wrap{background:#dedbd4;border-color:#c6bdb3;box-shadow:0 7px 25px #7772}
 body[data-theme="light"] #cell-layer .cell-bg{fill:#c8c9c8;stroke:#aeb2b5}
@@ -116,6 +121,7 @@ body[data-theme="mono"] #board .tile{filter:grayscale(1)}
     <button id="stats-btn" type="button">Estatísticas</button>
     <button id="achievements-btn" type="button">Conquistas</button>
     <button id="leaderboard-btn" type="button">Ranking</button>
+    <button id="install-btn" type="button" hidden>Instalar app</button>
   </div>
   <div class="board-wrap"><svg id="board" viewBox="30 30 540 540" role="img" aria-label="Tabuleiro hexagonal"><title>HEX 19683 - tabuleiro interativo</title><g id="cell-layer"></g><g id="tile-layer"></g><g id="fx-layer" pointer-events="none"></g></svg></div>
   <div class="bottom"><span><strong id="tile-count">2 peças</strong> · <span id="moves">0</span> jogadas</span><span class="bottom-note">Teclado <strong>7 9 4 6 1 3</strong> · Celular: toque e segure</span></div>
@@ -387,6 +393,11 @@ body[data-theme="mono"] #board .tile{filter:grayscale(1)}
       e.preventDefault();move(keyDirections[number]);
     }
   });
+  let deferredInstall=null;
+  window.addEventListener('beforeinstallprompt',event=>{event.preventDefault();deferredInstall=event;document.getElementById('install-btn').hidden=false;});
+  window.addEventListener('appinstalled',()=>{deferredInstall=null;document.getElementById('install-btn').hidden=true;});
+  document.getElementById('install-btn').addEventListener('click',async()=>{if(!deferredInstall)return;const e=deferredInstall;deferredInstall=null;document.getElementById('install-btn').hidden=true;try{await e.prompt();}catch(_){}});
+  if('serviceWorker' in navigator && location.protocol==='https:')window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
   document.getElementById('stats-btn').addEventListener('click',()=>openModal('stats'));
   document.getElementById('achievements-btn').addEventListener('click',()=>openModal('achievements'));
   document.getElementById('restart-btn').addEventListener('click',()=>openModal('restart'));
