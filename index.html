@@ -28,6 +28,7 @@ button:focus-visible{outline:2px solid var(--mint);outline-offset:3px}
 .variants button:hover,.variants select:focus-visible{border-color:var(--mint)}
 .variants button[hidden]{display:none!important}
 body{--bg:#080713;--panel:#141028;--panel2:#211737;--line:#544078;--text:#fff8ff;--muted:#b3a3d4;--mint:#4ef5d5;--purple:#e189ff;--gold:#faff8b;background:radial-gradient(circle at 30% 30%,#271347 0%,#080713 75%)}
+#board .tile{filter:drop-shadow(0 0 8px #4ef5d555)}
 .score{background:#211737;border-color:#544078}
 .score small{color:#c3b3db}
 .icon-button{background:#2a1d42;border-color:#5b4981;color:#f4eaff}
@@ -50,11 +51,13 @@ body{--bg:#080713;--panel:#141028;--panel2:#211737;--line:#544078;--text:#fff8ff
 #board{width:100%;height:100%;display:block;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;cursor:grab}
 #board:active{cursor:grabbing}
 #cell-layer .cell-bg{fill:#27354b;stroke:#405470;stroke-width:1.35}
-#board .tile{filter:none}
+#board .tile{filter:drop-shadow(0 3px 3px #02091d45)}
 #board .tile .tile-shape{stroke:#ffffff27;stroke-width:1.2}
 #board .tile-value{font-weight:900;text-anchor:middle;dominant-baseline:central;font-family:Inter,system-ui,sans-serif;letter-spacing:-1.3px;pointer-events:none}
-#board .spawn,#board .merged{animation:tileAppear .08s ease-out}
-@keyframes tileAppear{from{opacity:.7}to{opacity:1}}
+#board .spawn{animation:popIn .22s cubic-bezier(.1,.6,.3,1.65)}
+#board .merged{animation:mergeIn .28s cubic-bezier(.17,.7,.4,1.2)}
+@keyframes popIn{from{opacity:0;scale:.1}to{opacity:1;scale:1}}
+@keyframes mergeIn{0%{scale:.9}50%{scale:1.16}100%{scale:1}}
 .bottom{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;color:var(--muted);font-size:clamp(9px,2.3vw,12px);line-height:1.25;min-height:19px}
 .bottom strong{color:var(--mint)}
 .bottom-note{flex:1;text-align:right}
@@ -92,7 +95,7 @@ body{--bg:#080713;--panel:#141028;--panel2:#211737;--line:#544078;--text:#fff8ff
       <button class="icon-button" id="help-btn" title="Como jogar" aria-label="Como jogar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 4.1 2c-1.15.85-1.6 1.3-1.6 2.5M12 17h.01"/></svg></button>
     </div>
   </div>
-  <div class="board-wrap"><svg id="board" viewBox="30 30 540 540" role="img" aria-label="Tabuleiro hexagonal"><title>HEX 3072 - tabuleiro interativo</title><g id="cell-layer"></g><g id="tile-layer"></g></svg></div>
+  <div class="board-wrap"><svg id="board" viewBox="30 30 540 540" role="img" aria-label="Tabuleiro hexagonal"><title>HEX 3072 - tabuleiro interativo</title><g id="cell-layer"></g><g id="tile-layer"></g><g id="fx-layer" pointer-events="none"></g></svg></div>
   <div class="variants" aria-label="Modos e opções">
     <select id="size-select" aria-label="Tamanho do tabuleiro"><option value="7">7 casas</option><option value="19">19 casas</option><option value="37">37 casas</option><option value="61">61 casas</option></select>
     <button id="achievements-btn" type="button">Conquistas</button>
@@ -130,13 +133,13 @@ body{--bg:#080713;--panel:#141028;--panel2:#211737;--line:#544078;--text:#fff8ff
   document.body.dataset.theme='neon';
   // Apenas marcos e conquistas: sem partículas ou animações SVG por fusão.
   function celebrate(out){
-    const highest=Math.max(0,...out.mergedIds.map(id=>session.cells[id]));
-    for(const goal of [768,3072,6144,12288]){
-      if(highest>=goal&&!session.milestones.includes(goal)){
-        session.milestones.push(goal);
-        toast('Novo marco: '+goal.toLocaleString('pt-BR')+'!');
-      }
+    const fx=document.getElementById('fx-layer');
+    for(const id of out.mergedIds){const p=cellMap[id];if(!p)continue;
+      for(let i=0;i<7;i++){const angle=i*Math.PI*2/7,c=node('circle',{cx:p.x,cy:p.y,r:Math.max(2,HR*.07),fill:'#b1ffde',opacity:.9});fx.appendChild(c);
+        const ani=c.animate([{transform:'translate(0,0) scale(1)',opacity:1},{transform:`translate(${Math.cos(angle)*HR*.8}px,${Math.sin(angle)*HR*.8}px) scale(.2)`,opacity:0}],{duration:360,easing:'ease-out'});ani.onfinish=()=>c.remove();}
     }
+    const highest=Math.max(0,...out.mergedIds.map(id=>session.cells[id]));
+    for(const goal of [768,3072,6144,12288])if(highest>=goal&&!session.milestones.includes(goal)){session.milestones.push(goal);toast('Novo marco: '+goal.toLocaleString('pt-BR')+'!');}
   }
   function evaluateAwards(out){if(out.mergedIds.length)unlock('first');const max=Math.max(...Object.values(session.cells));for(const goal of [96,768,3072,6144,12288,24576])if(max>=goal)unlock(String(goal));if(session.moves>=100)unlock('100moves');if(session.score>=1000)unlock('1000pts');}
   function mergeAudio(out){if(!out.mergedIds.length){sound(260,'move');return;}const peak=Math.max(...out.mergedIds.map(id=>session.cells[id]));const tier=Math.round(Math.log(peak/3)/Math.log(2));sound(Math.min(1050,190*Math.pow(2,tier/12)),'merge');}
@@ -227,70 +230,24 @@ body{--bg:#080713;--panel:#141028;--panel2:#211737;--line:#544078;--text:#fff8ff
     }catch(e){}
   }
   function toast(message){clearTimeout(toastTimer);toastEl.textContent=message;toastEl.classList.add('show');toastTimer=setTimeout(()=>toastEl.classList.remove('show'),2400);}
-  // As peças deslizam juntas por um curto intervalo; só depois exibimos
-  // o resultado das fusões. Sem partículas, filtros ou animação dos fundos.
-  const MOVE_DURATION=135;
-  function animateMoves(paths){
-    const fragment=document.createDocumentFragment(),motions=[];
-    for(const path of paths){
-      const from=cellMap[path.source],to=cellMap[path.target];
-      const piece=tileElement(from,path.value);
-      if(path.source!==path.target){
-        const inner=node('g'),dx=to.x-from.x,dy=to.y-from.y;
-        while(piece.firstChild)inner.appendChild(piece.firstChild);
-        piece.appendChild(inner);
-        motions.push({inner,dx,dy});
-      }
-      fragment.appendChild(piece);
-    }
-    tileLayer.replaceChildren(fragment);
-    for(const {inner,dx,dy} of motions){
-      if(typeof inner.animate==='function'){
-        try{
-          inner.animate(
-            [{transform:'translate(0px, 0px)'},{transform:`translate(${dx}px, ${dy}px)`}],
-            {duration:MOVE_DURATION,easing:'cubic-bezier(.25,.6,.35,1)',fill:'forwards'}
-          );
-        }catch(_){
-          inner.setAttribute('transform',`translate(${dx} ${dy})`);
-        }
-      }else{
-        inner.setAttribute('transform',`translate(${dx} ${dy})`);
-      }
-    }
-  }
   function move(d){
-    if(modalOpen||d<0||d>5)return;
-    if(animationBusy)return;
-    const out=simulate(session.cells,d);
-    if(!out.changed)return;
+    if(animationBusy||modalOpen||d<0||d>5)return;
+    const out=simulate(session.cells,d);if(!out.changed)return;
     session.undo={cells:{...session.cells},score:session.score,moves:session.moves,won:session.won,merges:session.merges,milestones:[...session.milestones]};
     session.cells=out.next;session.score+=out.gained;session.moves++;session.merges+=out.mergedIds.length;
     if(session.score>best)best=session.score;
-    mergeAudio(out);
-    animationBusy=true;
-    // A partida já fica salva mesmo se a aba for fechada durante a transição.
-    safeSave();
-    if(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches){
-      finishMove(out);
-    }else{
-      animateMoves(out.paths);
-      window.setTimeout(()=>finishMove(out),MOVE_DURATION);
+    animationBusy=true;mergeAudio(out);
+    tileLayer.replaceChildren();
+    for(const path of out.paths){const src=cellMap[path.source],dst=cellMap[path.target],piece=tileElement(src,path.value);tileLayer.appendChild(piece);
+      if(path.source!==path.target){const x=dst.x-src.x,y=dst.y-src.y,mover=node('g');while(piece.firstChild)mover.appendChild(piece.firstChild);piece.appendChild(mover);
+        try{mover.animate([{transform:'translate(0px,0px)'},{transform:`translate(${x}px,${y}px)`}],{duration:155,easing:'cubic-bezier(.28,.65,.44,1)',fill:'forwards'});}catch(e){}
+      }
     }
-  }
-  function finishMove(out){
-    // O número fundido substitui os números de origem, sem efeito explosivo.
-    const created=spawn(session.cells);
-    drawBoard(created,out.mergedIds);
-    celebrate(out);
-    evaluateAwards(out);
-    animationBusy=false;
-    if(!session.won&&Object.values(session.cells).some(v=>v>=GOAL)){
-      session.won=true;sound(850,'merge');openModal('won');
-    }else if(!legalMove(session.cells)){
-      openModal('lost');
-    }
-    safeSave();
+    setTimeout(()=>{const created=spawn(session.cells);drawBoard(created,out.mergedIds);safeSave();animationBusy=false;
+      celebrate(out);evaluateAwards(out);
+      if(!session.won&&Object.values(session.cells).some(v=>v>=GOAL)){session.won=true;safeSave();sound(850,'merge');openModal('won');}
+      else if(!legalMove(session.cells))openModal('lost');
+    },160);
   }
   function fitBoard(){
     const app=document.querySelector('.app'),game=document.querySelector('.game'),hud=document.querySelector('.hud'),toolbar=document.querySelector('.toolbar'),bottom=document.querySelector('.bottom');
