@@ -1,0 +1,20 @@
+{
+  "name": "HEX 19683 — quebra-cabeça hexagonal",
+  "short_name": "HEX 19683",
+  "description": "Combine potências de 3 em seis direções. Jogue offline.",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0b0e19",
+  "theme_color": "#0b0e19",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
