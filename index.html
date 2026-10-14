@@ -37,16 +37,16 @@ body{--bg:#080713;--panel:#141028;--panel2:#211737;--line:#544078;--text:#fff8ff
 .variants{margin-top:2px}
 @media(max-height:450px){.variants{gap:3px}.variants select,.variants button{min-height:23px;padding:3px 5px;font-size:10px}}
 .stats{display:flex;gap:clamp(5px,1.4vw,10px);flex:none}
-.score{background:#232b40;border:1px solid #38455e;border-radius:13px;min-width:clamp(76px,21vw,112px);padding:9px clamp(6px,2vw,13px);text-align:center;box-shadow:0 3px 12px #0002}
-.score small{display:block;color:#aab7d1;text-transform:uppercase;font-weight:850;font-size:clamp(8px,1.8vw,10px);letter-spacing:.5px}
+.score{background:#211737;border:1px solid #544078;border-radius:13px;min-width:clamp(76px,21vw,112px);padding:9px clamp(6px,2vw,13px);text-align:center;box-shadow:0 3px 12px #0002}
+.score small{display:block;color:#c3b3db;text-transform:uppercase;font-weight:850;font-size:clamp(8px,1.8vw,10px);letter-spacing:.5px}
 .score strong{display:block;color:var(--text);font-size:clamp(16px,4.3vw,25px);margin-top:3px;font-weight:900;letter-spacing:-.8px;line-height:1.2;font-variant-numeric:tabular-nums}
 .score.best strong{color:var(--gold)}
 .toolbar{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:37px}
 .toolbar-caption{font-size:clamp(10px,2.5vw,13px);color:var(--muted);font-weight:650}
 .toolbar-caption b{color:var(--purple)}
 .actions{display:flex;align-items:center;gap:7px;flex-shrink:0}
-.icon-button{width:clamp(32px,8vw,42px);height:clamp(32px,8vw,42px);display:grid;place-items:center;color:#dce4f8;border:1px solid #3d4a63;border-radius:11px;background:#263047;transition:background .14s,transform .14s}
-.icon-button:hover:not(:disabled){background:#334765;transform:translateY(-1px)}
+.icon-button{width:clamp(32px,8vw,42px);height:clamp(32px,8vw,42px);display:grid;place-items:center;color:#f4eaff;border:1px solid #5b4981;border-radius:11px;background:#2a1d42;transition:background .14s,transform .14s}
+.icon-button:hover:not(:disabled){background:#443164;transform:translateY(-1px)}
 .icon-button:disabled{opacity:.32;cursor:not-allowed}
 .icon-button svg{width:19px;height:19px}
 .icon-button.primary{background:#295548;border-color:#70cbaa;color:#bbffdc}
@@ -92,7 +92,7 @@ body{--bg:#080713;--panel:#141028;--panel2:#211737;--line:#544078;--text:#fff8ff
 .radial-touch.committed .radial-touch-center{background:#2f7567;border-color:#93f0c8;color:#fff}
 @media(max-width:390px){.identity-title{font-size:clamp(30px,10vw,39px)}.identity-sub{font-size:10px}.score{padding:7px 5px}.actions{gap:5px}}
 @media(max-height:540px){.identity-sub{display:none}.score{padding-top:5px;padding-bottom:5px}.game{gap:5px}.toolbar-caption{font-size:10px}.bottom-note{font-size:10px}}
-@media(max-height:380px){.identity-title{font-size:30px}.toolbar{min-height:30px}.icon-button{height:30px;width:30px}.score strong{font-size:15px}.bottom{font-size:9px}}
+@media(max-height:380px){.app{padding:3px 6px}.game{gap:3px}.bottom-note{display:none}.identity-title{font-size:30px}.toolbar{min-height:30px}.icon-button{height:30px;width:30px}.score strong{font-size:15px}.bottom{font-size:9px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 </style>
 </head>
@@ -259,7 +259,7 @@ body{--bg:#080713;--panel:#141028;--panel2:#211737;--line:#544078;--text:#fff8ff
     const spacing=parseFloat(getComputedStyle(game).rowGap)||12;
     const padding=parseFloat(getComputedStyle(app).paddingTop)||12;
     const variants=document.querySelector('.variants');const remaining=height-hud.offsetHeight-toolbar.offsetHeight-bottom.offsetHeight-variants.offsetHeight-spacing*4-padding*2-4;
-    const size=Math.max(90,Math.floor(Math.min(560,game.clientWidth,viewportWidth-24,remaining)));
+    const size=Math.max(70,Math.floor(Math.min(560,game.clientWidth,viewportWidth-24,remaining)));
     document.documentElement.style.setProperty('--board-size',size+'px');
   }
   function resetGame(){session=makeSession();drawBoard();safeSave();toast('Nova partida iniciada.');}
@@ -269,7 +269,6 @@ body{--bg:#080713;--panel:#141028;--panel2:#211737;--line:#544078;--text:#fff8ff
     modalOpen=true;const title=document.getElementById('modal-title'),icon=document.getElementById('modal-icon'),copy=document.getElementById('modal-copy'),help=document.getElementById('modal-help'),actions=document.getElementById('modal-actions');
     actions.replaceChildren();help.hidden=true;help.innerHTML='';let heading='',message='',symbol='✦',buttons=[];
     if(kind==='achievements'){
-    }else if(kind==='achievements'){
       heading='Conquistas';symbol='★';message=`${unlocked.size} de ${achievements.length} desbloqueadas`;
       help.hidden=false;help.innerHTML=achievements.map(([id,name,desc])=>`<li>${unlocked.has(id)?'✓':'○'} <b>${name}</b>: ${desc}</li>`).join('');
       buttons=[['Fechar',closeModal,'primary']];
