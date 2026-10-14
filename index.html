@@ -407,8 +407,11 @@ body[data-theme="mono"] #board .tile{filter:grayscale(1)}
   overlay.addEventListener('click',event=>{if(event.target===overlay)closeModal();});
   readStorage();if(!session)session=makeSession();if(best<session.score)best=session.score;
   document.querySelectorAll('.sound-waves').forEach(el=>el.style.opacity=soundOn?'1':'.18');
+  window.HEX_GAME_API={snapshot:()=>({mode:gameMode,date:dailyDate,cells:boardCount,score:session.score,moves:session.moves,largest:Math.max(0,...Object.values(session.cells))})};
   drawBoard();safeSave();fitBoard();window.addEventListener('resize',fitBoard);window.visualViewport?.addEventListener('resize',fitBoard);
 })();
 </script>
+<script src="./leaderboard-config.js"></script>
+<script src="./leaderboard.js" defer></script>
 </body>
 </html>
