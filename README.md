@@ -1,16 +1,18 @@
-# HEX 2048
+# HEX 2187
 
-Uma versão hexagonal do quebra-cabeça 2048, com 19 casas e seis direções.
+Jogo de fusão numérica em um tabuleiro com **19 casas hexagonais e seis direções**, inspirado no 2048. Nesta versão, as peças seguem as **potências de 3**: `3 → 9 → 27 → 81 → 243 → 729 → 2187`.
 
-## Jogar
+Duas peças iguais criam a próxima potência de 3 (por exemplo, duas peças `3` viram uma peça `9`). A meta é alcançar **2187**; depois, é possível continuar jogando.
 
-Abra `index.html` no navegador. O jogo funciona sem servidor, sem bibliotecas externas e sem internet.
+## Jogar online
 
-### Teclado
+https://igorhfcosta.github.io/hex-2048/
 
-Use o teclado numérico (com ou sem Num Lock) ou os números da fileira superior:
+## Controles
 
-| Tecla | Movimento |
+No teclado numérico (mesmo sem Num Lock) ou na fileira superior:
+
+| Tecla | Direção |
 | --- | --- |
 | `7` | Noroeste (↖) |
 | `9` | Nordeste (↗) |
@@ -19,26 +21,23 @@ Use o teclado numérico (com ou sem Num Lock) ou os números da fileira superior
 | `1` | Sudoeste (↙) |
 | `3` | Sudeste (↘) |
 
-`R` reinicia (com confirmação); `U` desfaz a última jogada.
+`R` abre a confirmação de reinício; `U` desfaz a última jogada.
 
-### Celular
-
-Toque e **segure no tabuleiro** até aparecer o controle circular com seis setas. Arraste o dedo na direção desejada para efetuar uma jogada. Soltar sem arrastar cancela. Um deslize rápido também funciona.
+**Celular:** toque e segure o tabuleiro para exibir o controle radial de seis direções, depois arraste o dedo. Também é possível fazer um deslize rápido.
 
 ## Funcionalidades
 
-- 19 células hexagonais e seis direções de movimentação;
-- Fusões e geração de novas peças;
-- Animações, placar e recorde;
-- Desfazer e reiniciar;
-- Salvamento automático no `localStorage` do navegador;
-- Design responsivo, com controle radial no celular.
+- Interface minimalista, centralizada na tela, sem necessidade de rolagem;
+- Tabuleiro hexagonal, sem o antigo hexágono externo;
+- Animações, placar, recorde, desfazer e reiniciar;
+- Sons opcionais;
+- Salvamento automático do progresso neste navegador;
+- Arquivo HTML único, sem dependências ou servidor.
 
-## Publicar no GitHub Pages
+**Nota sobre o progresso:** a mudança da progressão de potências de 2 para potências de 3 cria uma partida nova e um novo recorde; a partida antiga não é convertida.
 
-1. Crie um repositório público no GitHub, por exemplo `hex-2048`.
-2. Envie `index.html`, `.nojekyll` e `README.md` para a raiz da branch `main`.
-3. Em **Settings → Pages**, escolha **Deploy from a branch**, branch **main** e pasta **/(root)**, e salve.
-4. Aguarde o GitHub Pages publicar o site. O link normalmente segue o formato `https://SEU-USUARIO.github.io/hex-2048/`.
+## GitHub Pages
 
-Este jogo foi inspirado na mecânica de fusão numérica popularizada pelo 2048. O código desta versão foi desenvolvido especificamente para o tabuleiro hexagonal.
+O `index.html` na raiz da branch `main` é a página do jogo. Para publicar, configure **Settings → Pages → Deploy from a branch → main → /(root)**.
+
+O nome do repositório foi mantido como `hex-2048` para preservar o endereço público já existente.
