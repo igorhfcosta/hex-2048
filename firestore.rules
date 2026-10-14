@@ -1,0 +1,38 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Placares públicos. Escrita limitada ao identificador autenticado do jogador.
+    // IMPORTANTE: regras validam formato, não conseguem provar pontuação de jogo.
+    match /boards/{boardKey}/scores/{userId} {
+      function validBoard() {
+        return boardKey.matches('^(free|daily_[0-9]{4}-[0-9]{2}-[0-9]{2})_(7|19|37|61)$');
+      }
+      function isOwner() {
+        return request.auth != null && request.auth.uid == userId;
+      }
+      function validScore() {
+        return request.resource.data.keys().hasOnly(['alias','score','moves','largest','updatedAt'])
+          && request.resource.data.keys().hasAll(['alias','score','moves','largest','updatedAt'])
+          && request.resource.data.alias is string
+          && request.resource.data.alias.size() >= 2
+          && request.resource.data.alias.size() <= 16
+          && request.resource.data.score is int
+          && request.resource.data.score >= 0
+          && request.resource.data.score <= 1000000000
+          && request.resource.data.moves is int
+          && request.resource.data.moves >= 1
+          && request.resource.data.moves <= 1000000
+          && request.resource.data.largest is int
+          && request.resource.data.largest >= 3
+          && request.resource.data.largest <= 1000000000
+          && request.resource.data.updatedAt == request.time;
+      }
+      allow get: if validBoard();
+      allow list: if validBoard() && request.query.limit <= 20;
+      allow create: if validBoard() && isOwner() && validScore();
+      allow update: if validBoard() && isOwner() && validScore()
+        && request.resource.data.score > resource.data.score;
+      allow delete: if false;
+    }
+  }
+}
