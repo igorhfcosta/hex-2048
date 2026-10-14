@@ -48,9 +48,9 @@
       const query=x.db.query(ref,x.db.orderBy('score','desc'),x.db.limit(20));
       const result=await x.db.getDocs(query);
       if(result.empty){const li=document.createElement('li');li.textContent='Nenhum resultado ainda. Seja o primeiro!';$('rank-list').appendChild(li);}
-      result.forEach((row,index)=>{
+      result.forEach(row=>{
         const entry=row.data();const li=document.createElement('li'),name=document.createElement('span'),score=document.createElement('strong');
-        name.textContent=(index+1)+'. '+String(entry.alias||'Jogador').slice(0,16);
+        name.textContent=String(entry.alias||'Jogador').slice(0,16);
         score.textContent=Number(entry.score||0).toLocaleString('pt-BR');
         li.append(name,score);$('rank-list').appendChild(li);
       });
