@@ -16,9 +16,9 @@
   const $=id=>curtain.querySelector('#'+id);
   const cfg=window.HEX_RANKING_CONFIG;
   let fb=null,busy=false;
-  try{$('rank-alias').value=localStorage.getItem('hex2187_alias')||'';}catch(_){}
+  try{$('rank-alias').value=localStorage.getItem('hex24576_alias')||'';}catch(_){}
   function snapshot(){return window.HEX_GAME_API?.snapshot?.()||null;}
-  function boardKey(s){return (s.mode==='daily'?'daily_'+s.date:'free')+'_'+s.cells;}
+  function boardKey(s){return 'free_sum_'+s.cells;}
   function status(t){$('rank-message').textContent=t;}
   function close(){curtain.hidden=true;curtain.style.display='none';}
   $('rank-close').onclick=close;
@@ -37,7 +37,7 @@
   }
   async function refresh(){
     const s=snapshot();if(!s)return;
-    $('rank-description').textContent=(s.mode==='daily'?'Desafio de '+s.date:'Modo livre')+' · '+s.cells+' casas · seu placar: '+s.score.toLocaleString('pt-BR');
+    $('rank-description').textContent='Modo livre · soma de iguais · '+s.cells+' casas · seu placar: '+s.score.toLocaleString('pt-BR');
     $('rank-list').replaceChildren();
     if(!cfg){status('Ranking online aguardando configuração do Firebase. O jogo offline continua disponível.');return;}
     status('Carregando ranking…');
