@@ -12,7 +12,7 @@ Apenas duas peças iguais se fundem; cada fusão acrescenta à pontuação **o v
 
 - Tabuleiros com 7, 19 (padrão), 37 ou 61 casas.
 - Tema visual **neon**, sem seletor de temas.
-- Efeito visual discreto e rápido nas fusões, sem partículas ou vibração; sons opcionais por valor e marcos de conquista.
+- Animação leve de deslizamento (135 ms) até a casa de destino, seguida de fusão discreta, sem partículas ou vibração; sons opcionais por valor e marcos de conquista.
 - Placar, recorde, desfazer, conquistas e ranking opcional por tabuleiro.
 - PWA instalável em dispositivos compatíveis, com suporte offline após instalação/cache.
 - Botões extras **abaixo do tabuleiro** para manter a tela limpa.
