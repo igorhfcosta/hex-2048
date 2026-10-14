@@ -12,7 +12,7 @@ Apenas duas peças iguais se fundem; cada fusão acrescenta à pontuação **o v
 
 - Tabuleiros com 7, 19 (padrão), 37 ou 61 casas.
 - Tema visual **neon**, sem seletor de temas.
-- Animações, partículas, notas sonoras por valor, comemorações e vibração opcional em celulares compatíveis.
+- Efeito visual discreto e rápido nas fusões, sem partículas ou vibração; sons opcionais por valor e marcos de conquista.
 - Placar, recorde, desfazer, conquistas e ranking opcional por tabuleiro.
 - PWA instalável em dispositivos compatíveis, com suporte offline após instalação/cache.
 - Botões extras **abaixo do tabuleiro** para manter a tela limpa.
@@ -29,7 +29,7 @@ Apenas duas peças iguais se fundem; cada fusão acrescenta à pontuação **o v
 | `1` | Sudoeste (↙) |
 | `3` | Sudeste (↘) |
 
-Use as teclas da fileira superior ou do teclado numérico (com ou sem Num Lock). `R` reinicia após confirmação; `U` desfaz a última jogada. No celular, toque e segure o tabuleiro para abrir o controle radial e arraste na direção desejada; um deslize rápido também funciona.
+Use as teclas da fileira superior ou do teclado numérico (com ou sem Num Lock). `R` reinicia após confirmação; `U` desfaz a última jogada. No celular, basta **deslizar o dedo diretamente sobre o tabuleiro** em uma das seis direções. Não há controle radial nem vibração.
 
 ## Progresso e regras antigas
 
@@ -37,7 +37,7 @@ Esta versão continua usando o mesmo espaço de salvamento local da variante por
 
 ## Ranking opcional
 
-O ranking precisa de um Firebase próprio com Authentication anônima e Firestore; consulte [FIREBASE_SETUP.md](FIREBASE_SETUP.md). As classificações atuais ficam nas coleções `free_sum_7`, `free_sum_19`, `free_sum_37` e `free_sum_61`, separadas das versões anteriores. A pontuação enviada pelo navegador **não possui validação antitrapaça no servidor**.
+O ranking precisa de um Firebase próprio com Authentication anônima e Firestore; consulte [FIREBASE_SETUP.md](FIREBASE_SETUP.md). As classificações atuais ficam nas coleções `free_sum_7`, `free_sum_19`, `free_sum_37` e `free_sum_61`, separadas das versões anteriores. A lista exibe **somente o apelido e a pontuação** de cada jogador. A pontuação enviada pelo navegador **não possui validação antitrapaça no servidor**.
 
 ## Publicação
 
