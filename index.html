@@ -8,8 +8,8 @@
 <link rel="icon" type="image/svg+xml" href="./icon.svg" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<meta name="description" content="HEX 19683: combine potências de 3 em 19 casas hexagonais e seis direções até atingir 19.683." />
-<title>HEX 19683 · Jogo de fusão hexagonal</title>
+<meta name="description" content="HEX 24576: some peças iguais em seis direções e alcance 24.576." />
+<title>HEX 24576 · Jogo de fusão hexagonal</title>
 <style>
 :root{color-scheme:dark;--bg:#0b0e19;--panel:#14182a;--panel2:#1a1f35;--line:#2e3653;--text:#f6f7ff;--muted:#a0abc7;--mint:#85f1c5;--purple:#ac9af9;--gold:#fdd591;--board-size:400px}
 *,*::before,*::after{box-sizing:border-box}
@@ -29,17 +29,12 @@ button:focus-visible{outline:2px solid var(--mint);outline-offset:3px}
 .variants select,.variants button{appearance:none;color:var(--text);background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:5px 7px;font-size:clamp(9px,2.3vw,12px);font-weight:700;min-height:29px}
 .variants button:hover,.variants select:focus-visible{border-color:var(--mint)}
 .variants button[hidden]{display:none!important}
-body[data-theme="light"]{--bg:#f5f2eb;--panel:#eee9e0;--panel2:#e5e0d8;--line:#c8bfb3;--text:#302c36;--muted:#67616a;--mint:#257f6b;--purple:#6a4ac1;--gold:#a85d20;background:#f5f2eb}
-body[data-theme="light"] .board-wrap{background:#dedbd4;border-color:#c6bdb3;box-shadow:0 7px 25px #7772}
-body[data-theme="light"] #cell-layer .cell-bg{fill:#c8c9c8;stroke:#aeb2b5}
-body[data-theme="light"] .score{background:#e0d9cc;border-color:#cbbfb1}
-body[data-theme="light"] .score small{color:#665e55}
-body[data-theme="light"] .score strong{color:#282633}
-body[data-theme="light"] .icon-button{background:#d9d3c8;color:#433c49;border-color:#bab2a7}
-body[data-theme="neon"]{--bg:#080713;--panel:#141028;--panel2:#211737;--line:#544078;--text:#fff8ff;--mint:#4ef5d5;--purple:#e189ff;--gold:#faff8b;background:radial-gradient(circle at 30% 30%,#271347 0%,#080713 75%)}
-body[data-theme="neon"] #board .tile{filter:drop-shadow(0 0 8px #4ef5d555)}
-body[data-theme="mono"]{--bg:#0f1318;--panel:#191f27;--panel2:#252c36;--line:#4a5767;--text:#f6f6f6;--muted:#bdc4cd;--mint:#e6e9ef;--purple:#bbc3ce;--gold:#e8e9ee;background:#111820}
-body[data-theme="mono"] #board .tile{filter:grayscale(1)}
+body{--bg:#080713;--panel:#141028;--panel2:#211737;--line:#544078;--text:#fff8ff;--muted:#b3a3d4;--mint:#4ef5d5;--purple:#e189ff;--gold:#faff8b;background:radial-gradient(circle at 30% 30%,#271347 0%,#080713 75%)}
+#board .tile{filter:drop-shadow(0 0 8px #4ef5d555)}
+.score{background:#211737;border-color:#544078}
+.score small{color:#c3b3db}
+.icon-button{background:#2a1d42;border-color:#5b4981;color:#f4eaff}
+.variants{margin-top:2px}
 @media(max-height:450px){.variants{gap:3px}.variants select,.variants button{min-height:23px;padding:3px 5px;font-size:10px}}
 .stats{display:flex;gap:clamp(5px,1.4vw,10px);flex:none}
 .score{background:#232b40;border:1px solid #38455e;border-radius:13px;min-width:clamp(76px,21vw,112px);padding:9px clamp(6px,2vw,13px);text-align:center;box-shadow:0 3px 12px #0002}
@@ -102,11 +97,11 @@ body[data-theme="mono"] #board .tile{filter:grayscale(1)}
 </style>
 </head>
 <body>
-<div class="app"><main class="game" aria-label="HEX 19683">
-  <header class="hud"><div class="identity"><div class="identity-title">HEX</div><p class="identity-sub">Meta: <strong>19.683</strong> · 6 direções</p></div>
+<div class="app"><main class="game" aria-label="HEX 24576">
+  <header class="hud"><div class="identity"><div class="identity-title">HEX</div><p class="identity-sub">Meta: <strong>24.576</strong> · 6 direções</p></div>
     <div class="stats" aria-label="Placar"><div class="score"><small>Pontuação</small><strong id="score">0</strong></div><div class="score best"><small>Recorde</small><strong id="best">0</strong></div></div>
   </header>
-  <div class="toolbar"><div class="toolbar-caption">Combine <b>potências de 3</b></div>
+  <div class="toolbar"><div class="toolbar-caption">Some <b>peças iguais</b></div>
     <div class="actions">
       <button class="icon-button" id="undo-btn" disabled title="Desfazer jogada" aria-label="Desfazer jogada"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5M4 9h10a6 6 0 0 1 0 12h-2"/></svg></button>
       <button class="icon-button primary" id="restart-btn" title="Novo jogo" aria-label="Novo jogo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 11a9 9 0 1 1 3 7M3 4v7h7"/></svg></button>
@@ -114,16 +109,13 @@ body[data-theme="mono"] #board .tile{filter:grayscale(1)}
       <button class="icon-button" id="help-btn" title="Como jogar" aria-label="Como jogar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 4.1 2c-1.15.85-1.6 1.3-1.6 2.5M12 17h.01"/></svg></button>
     </div>
   </div>
+  <div class="board-wrap"><svg id="board" viewBox="30 30 540 540" role="img" aria-label="Tabuleiro hexagonal"><title>HEX 24576 - tabuleiro interativo</title><g id="cell-layer"></g><g id="tile-layer"></g><g id="fx-layer" pointer-events="none"></g></svg></div>
   <div class="variants" aria-label="Modos e opções">
-    <select id="mode-select" aria-label="Modo de jogo"><option value="free">Livre</option><option value="daily">Desafio diário</option></select>
     <select id="size-select" aria-label="Tamanho do tabuleiro"><option value="7">7 casas</option><option value="19">19 casas</option><option value="37">37 casas</option><option value="61">61 casas</option></select>
-    <select id="theme-select" aria-label="Tema visual"><option value="dark">Original</option><option value="light">Claro</option><option value="neon">Neon</option><option value="mono">Monocromático</option></select>
-    <button id="stats-btn" type="button">Estatísticas</button>
     <button id="achievements-btn" type="button">Conquistas</button>
     <button id="leaderboard-btn" type="button">Ranking</button>
     <button id="install-btn" type="button" hidden>Instalar app</button>
   </div>
-  <div class="board-wrap"><svg id="board" viewBox="30 30 540 540" role="img" aria-label="Tabuleiro hexagonal"><title>HEX 19683 - tabuleiro interativo</title><g id="cell-layer"></g><g id="tile-layer"></g><g id="fx-layer" pointer-events="none"></g></svg></div>
   <div class="bottom"><span><strong id="tile-count">2 peças</strong> · <span id="moves">0</span> jogadas</span><span class="bottom-note">Teclado <strong>7 9 4 6 1 3</strong> · Celular: toque e segure</span></div>
 </main></div>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
@@ -135,20 +127,13 @@ body[data-theme="mono"] #board .tile{filter:grayscale(1)}
   const params=new URLSearchParams(window.location.search);
   const boardCount=[7,19,37,61].includes(Number(params.get('size')))?Number(params.get('size')):19;
   const boardRadius={7:1,19:2,37:3,61:4}[boardCount];
-  const gameMode=params.get('mode')==='daily'?'daily':'free';
-  const dailyDate=new Date().toISOString().slice(0,10); // Todos usam o mesmo dia UTC.
-  const storageKey=gameMode==='daily'?'hex_daily_'+dailyDate+'_'+boardCount+'_v1':boardCount===19?'hex2187_v1':'hex_free_'+boardCount+'_v1';
-  const previousStorageKey='hex2048_v1', GOAL=19683;
-  function stringSeed(str){let h=2166136261;for(const c of str){h=Math.imul(h^c.charCodeAt(0),16777619);}return h>>>0;}
-  const dailySeed=stringSeed('hex2187:'+dailyDate+':'+boardCount);
-  let rngState=dailySeed;
-  function randomUnit(){if(gameMode!=='daily')return Math.random();rngState=(rngState+0x6D2B79F5)>>>0;let t=rngState;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return ((t^(t>>>14))>>>0)/4294967296;}
-  document.getElementById('mode-select').value=gameMode;
+  const gameMode='free', GOAL=24576;
+  const storageKey='hex24576_free_'+boardCount+'_v1',previousStorageKey='hex2187_v1';
+  const randomUnit=()=>Math.random();
   document.getElementById('size-select').value=String(boardCount);
-  function switchBoard(){const mode=document.getElementById('mode-select').value,size=document.getElementById('size-select').value;const q=new URLSearchParams();if(mode==='daily')q.set('mode','daily');if(size!=='19')q.set('size',size);location.assign(location.pathname+(q.size?'?'+q.toString():''));}
-  document.getElementById('mode-select').addEventListener('change',switchBoard);
-  document.getElementById('size-select').addEventListener('change',switchBoard);
-  document.querySelector('.toolbar-caption').innerHTML=gameMode==='daily'?'Desafio <b>'+dailyDate+'</b> · peças previsíveis':'Combine <b>potências de 3</b>';
+  document.getElementById('size-select').addEventListener('change',e=>{
+    const size=e.target.value;location.assign(location.pathname+(size==='19'?'':'?size='+size));
+  });
   const config={angles:[-120,-60,0,60,120,180],labels:['Noroeste','Nordeste','Leste','Sudeste','Sudoeste','Oeste'],keys:['7','9','6','3','1','4']};
   const keyDirections=Object.fromEntries(config.keys.map((key,index)=>[key,index]));
   const vectors=[[0,-1],[1,-1],[1,0],[0,1],[-1,1],[-1,0]];
@@ -156,16 +141,11 @@ body[data-theme="mono"] #board .tile{filter:grayscale(1)}
   const scoreEl=document.getElementById('score'),bestEl=document.getElementById('best'),movesEl=document.getElementById('moves'),undoBtn=document.getElementById('undo-btn');
   const overlay=document.getElementById('overlay'),toastEl=document.getElementById('toast');
   let session=null,best=0,soundOn=false,audioContext=null,animationBusy=false,modalOpen=false,toastTimer=null;
-  const achievements=[['first','Primeira fusão','Realize a primeira fusão'],['81','Primeiros passos','Alcance 81'],['729','Potência crescente','Alcance 729'],['2187','Veterano','Alcance 2.187'],['6561','Hex mestre','Alcance 6.561'],['19683','Lenda hexagonal','Alcance 19.683'],['100moves','Persistência','Faça 100 jogadas'],['1000pts','Pontuador','Faça 1.000 pontos'],['daily','Ritual diário','Jogue o desafio diário']];
+  const achievements=[['first','Primeira fusão','Realize a primeira fusão'],['96','Primeiros passos','Alcance 96'],['768','Potência crescente','Alcance 768'],['3072','Veterano','Alcance 3.072'],['12288','Hex mestre','Alcance 12.288'],['24576','Lenda hexagonal','Alcance 24.576'],['100moves','Persistência','Faça 100 jogadas'],['1000pts','Pontuador','Faça 1.000 pontos']];
   let unlocked=new Set();
-  try{unlocked=new Set(JSON.parse(localStorage.getItem('hex2187_achievements_v1')||'[]'));}catch(_){}
-  function unlock(id){if(unlocked.has(id))return;unlocked.add(id);try{localStorage.setItem('hex2187_achievements_v1',JSON.stringify([...unlocked]));}catch(_){}const label=achievements.find(a=>a[0]===id)?.[1];if(label)toast('Conquista: '+label);}
-  let themeChoice='dark';try{themeChoice=localStorage.getItem('hex2187_theme')||'dark';}catch(_){}
-  if(!['dark','light','neon','mono'].includes(themeChoice))themeChoice='dark';
-  document.body.dataset.theme=themeChoice;document.getElementById('theme-select').value=themeChoice;
-  document.getElementById('theme-select').addEventListener('change',e=>{themeChoice=e.target.value;document.body.dataset.theme=themeChoice;try{localStorage.setItem('hex2187_theme',themeChoice)}catch(_){};});
-  function sessionStats(){return {seconds:Math.max(0,Math.floor((Date.now()-(session?.startedAt||Date.now()))/1000)),merges:session?.merges||0,largest:Math.max(0,...Object.values(session?.cells||{})),moves:session?.moves||0,score:session?.score||0};}
-  function timeDisplay(t){return [Math.floor(t/3600),Math.floor(t%3600/60),t%60].map(x=>String(x).padStart(2,'0')).join(':');}
+  try{unlocked=new Set(JSON.parse(localStorage.getItem('hex24576_achievements_v1')||'[]'));}catch(_){}
+  function unlock(id){if(unlocked.has(id))return;unlocked.add(id);try{localStorage.setItem('hex24576_achievements_v1',JSON.stringify([...unlocked]));}catch(_){}const label=achievements.find(a=>a[0]===id)?.[1];if(label)toast('Conquista: '+label);}
+  document.body.dataset.theme='neon';
   function celebrate(out){
     const fx=document.getElementById('fx-layer');
     for(const id of out.mergedIds){const p=cellMap[id];if(!p)continue;
@@ -173,10 +153,10 @@ body[data-theme="mono"] #board .tile{filter:grayscale(1)}
         const ani=c.animate([{transform:'translate(0,0) scale(1)',opacity:1},{transform:`translate(${Math.cos(angle)*HR*.8}px,${Math.sin(angle)*HR*.8}px) scale(.2)`,opacity:0}],{duration:360,easing:'ease-out'});ani.onfinish=()=>c.remove();}
     }
     const highest=Math.max(0,...out.mergedIds.map(id=>session.cells[id]));
-    for(const goal of [729,2187,6561])if(highest>=goal&&!session.milestones.includes(goal)){session.milestones.push(goal);toast('Novo marco: '+goal.toLocaleString('pt-BR')+'!');}
+    for(const goal of [768,3072,12288])if(highest>=goal&&!session.milestones.includes(goal)){session.milestones.push(goal);toast('Novo marco: '+goal.toLocaleString('pt-BR')+'!');}
   }
-  function evaluateAwards(out){if(out.mergedIds.length)unlock('first');const max=Math.max(...Object.values(session.cells));for(const goal of [81,729,2187,6561,19683])if(max>=goal)unlock(String(goal));if(session.moves>=100)unlock('100moves');if(session.score>=1000)unlock('1000pts');if(gameMode==='daily')unlock('daily');}
-  function mergeAudio(out){if(!out.mergedIds.length){sound(260,'move');return;}const peak=Math.max(...out.mergedIds.map(id=>session.cells[id]));const tier=Math.round(Math.log(peak)/Math.log(3));sound(Math.min(1050,190*Math.pow(2,tier/12)),'merge');}
+  function evaluateAwards(out){if(out.mergedIds.length)unlock('first');const max=Math.max(...Object.values(session.cells));for(const goal of [96,768,3072,12288,24576])if(max>=goal)unlock(String(goal));if(session.moves>=100)unlock('100moves');if(session.score>=1000)unlock('1000pts');}
+  function mergeAudio(out){if(!out.mergedIds.length){sound(260,'move');return;}const peak=Math.max(...out.mergedIds.map(id=>session.cells[id]));const tier=Math.round(Math.log(peak/3)/Math.log(2));sound(Math.min(1050,190*Math.pow(2,tier/12)),'merge');}
   const coords=[];
   function node(name,attrs={},text){const el=document.createElementNS(NS,name);for(const [k,v] of Object.entries(attrs))el.setAttribute(k,String(v));if(text!==undefined)el.textContent=text;return el;}
   const HR=157/(boardRadius+1);
@@ -193,14 +173,13 @@ body[data-theme="mono"] #board .tile{filter:grayscale(1)}
     return [...parts.values()].map(line=>line.sort((a,b)=>(b.x-a.x)*dx+(b.y-a.y)*dy).map(p=>p.id));
   }
   const LINES=config.angles.map((_,d)=>lanesFor(d));
-  function isPowerOfThree(v){if(!Number.isSafeInteger(v)||v<3)return false;while(v>1&&v%3===0)v/=3;return v===1;}
-  function validCells(s){return s?.cells&&coords.every(p=>s.cells[p.id]===0||isPowerOfThree(s.cells[p.id]));}
-  function safeSave(){try{localStorage.setItem(storageKey,JSON.stringify({session,best,soundOn,goal:GOAL,rngState}));}catch(e){}}
+  function isValidTile(v){if(!Number.isSafeInteger(v)||v<3||v%3!==0)return false;v/=3;while(v>1&&v%2===0)v/=2;return v===1;}
+  function validCells(s){return s?.cells&&coords.every(p=>s.cells[p.id]===0||isValidTile(s.cells[p.id]));}
+  function safeSave(){try{localStorage.setItem(storageKey,JSON.stringify({session,best,soundOn,goal:GOAL}));}catch(e){}}
   function readStorage(){
     try{
       const raw=JSON.parse(localStorage.getItem(storageKey));
       const legacy=raw?null:JSON.parse(localStorage.getItem(previousStorageKey));
-      if(gameMode==='daily'&&Number.isInteger(raw?.rngState))rngState=raw.rngState>>>0;
       if(validCells(raw?.session))session={cells:Object.fromEntries(coords.map(p=>[p.id,raw.session.cells[p.id]])),score:Math.max(0,Number(raw.session.score)||0),moves:Math.max(0,Number(raw.session.moves)||0),won:raw.goal===GOAL&&!!raw.session.won,undo:null,merges:Math.max(0,Number(raw.session.merges)||0),startedAt:Number(raw.session.startedAt)||Date.now(),milestones:Array.isArray(raw.session.milestones)?raw.session.milestones:[]};
       if(Number.isFinite(raw?.best))best=Math.max(0,Math.floor(raw.best));
       const oldSound=raw?.soundOn??legacy?.soundOn;
@@ -208,8 +187,8 @@ body[data-theme="mono"] #board .tile{filter:grayscale(1)}
     }catch(e){}
   }
   function emptyCells(){return Object.fromEntries(coords.map(p=>[p.id,0]));}
-  function spawn(cells){const spaces=coords.map(p=>p.id).filter(id=>!cells[id]);if(!spaces.length)return null;const id=spaces[Math.floor(randomUnit()*spaces.length)];cells[id]=randomUnit()<.9?3:9;return id;}
-  function makeSession(){if(gameMode==='daily')rngState=dailySeed;const cells=emptyCells();spawn(cells);spawn(cells);return {cells,score:0,moves:0,won:false,undo:null,merges:0,startedAt:Date.now(),milestones:[]};}
+  function spawn(cells){const spaces=coords.map(p=>p.id).filter(id=>!cells[id]);if(!spaces.length)return null;const id=spaces[Math.floor(randomUnit()*spaces.length)];cells[id]=randomUnit()<.9?3:6;return id;}
+  function makeSession(){const cells=emptyCells();spawn(cells);spawn(cells);return {cells,score:0,moves:0,won:false,undo:null,merges:0,startedAt:Date.now(),milestones:[]};}
   function simulate(cells,d){
     const next={...cells};let gained=0,changed=false;const mergedIds=[],paths=[];
     for(const lane of LINES[d]){
@@ -218,7 +197,7 @@ body[data-theme="mono"] #board .tile{filter:grayscale(1)}
       for(let i=0;i<moving.length;i++){
         const current=moving[i],target=lane[results.length];
         if(i+1<moving.length&&moving[i+1].value===current.value){
-          const other=moving[++i];results.push(current.value*3);gained+=current.value*3;mergedIds.push(target);
+          const other=moving[++i];results.push(current.value*2);gained+=current.value*2;mergedIds.push(target);
           paths.push({source:current.id,target,value:current.value},{source:other.id,target,value:other.value});
         }else{results.push(current.value);paths.push({source:current.id,target,value:current.value});}
       }
@@ -227,7 +206,7 @@ body[data-theme="mono"] #board .tile{filter:grayscale(1)}
     return {next,gained,changed,mergedIds,paths};
   }
   function legalMove(cells){return LINES.some((_,d)=>simulate(cells,d).changed);}
-  const colors={3:['#e5f8ee','#193329'],9:['#baf1d6','#153c31'],27:['#83d8d1','#153b43'],81:['#77b9fa','#152f50'],243:['#b09df9','#29224e'],729:['#d98af4','#42254f'],2187:['#f5a5bd','#522b44'],6561:['#f9b48e','#5d3028'],19683:['#ffce7c','#56381b'],59049:['#e8e47b','#3f421f'],177147:['#fef0a4','#5c451b']};
+  const colors={3:['#e5f8ee','#193329'],6:['#baf1d6','#153c31'],12:['#83d8d1','#153b43'],24:['#77b9fa','#152f50'],48:['#b09df9','#29224e'],96:['#d98af4','#42254f'],192:['#f5a5bd','#522b44'],384:['#f9b48e','#5d3028'],768:['#ffce7c','#56381b'],1536:['#e8e47b','#3f421f'],3072:['#fef0a4','#5c451b'],6144:['#baffd1','#214934'],12288:['#8cf8ff','#134a50'],24576:['#fcf6ff','#4b2171']};
   function theme(value){return colors[value]||['#ffd77d','#55401a'];}
   function polyPoints(radius,offset=-90){return Array.from({length:6},(_,k)=>{const a=(offset+k*60)*Math.PI/180;return `${(Math.cos(a)*radius).toFixed(3)},${(Math.sin(a)*radius).toFixed(3)}`;}).join(' ');}
   function shape(fill,isBg=false){return node('polygon',{points:polyPoints(HR*.965),fill,class:isBg?'cell-bg':'tile-shape','stroke-linejoin':'round'});}
@@ -256,7 +235,7 @@ body[data-theme="mono"] #board .tile{filter:grayscale(1)}
   function move(d){
     if(animationBusy||modalOpen||d<0||d>5)return;
     const out=simulate(session.cells,d);if(!out.changed)return;
-    session.undo={cells:{...session.cells},score:session.score,moves:session.moves,won:session.won,merges:session.merges,milestones:[...session.milestones],rngState};
+    session.undo={cells:{...session.cells},score:session.score,moves:session.moves,won:session.won,merges:session.merges,milestones:[...session.milestones]};
     session.cells=out.next;session.score+=out.gained;session.moves++;session.merges+=out.mergedIds.length;
     if(session.score>best)best=session.score;
     animationBusy=true;mergeAudio(out);
@@ -284,27 +263,25 @@ body[data-theme="mono"] #board .tile{filter:grayscale(1)}
     document.documentElement.style.setProperty('--board-size',size+'px');
   }
   function resetGame(){session=makeSession();drawBoard();safeSave();toast('Nova partida iniciada.');}
-  function undo(){if(animationBusy||modalOpen||!session.undo)return;const old=session.undo;session.cells={...old.cells};session.score=old.score;session.moves=old.moves;session.won=old.won;session.merges=old.merges??session.merges;session.milestones=old.milestones??session.milestones;if(gameMode==='daily'&&Number.isInteger(old.rngState))rngState=old.rngState;session.undo=null;drawBoard();safeSave();toast('Última jogada desfeita.');}
+  function undo(){if(animationBusy||modalOpen||!session.undo)return;const old=session.undo;session.cells={...old.cells};session.score=old.score;session.moves=old.moves;session.won=old.won;session.merges=old.merges??session.merges;session.milestones=old.milestones??session.milestones;session.undo=null;drawBoard();safeSave();toast('Última jogada desfeita.');}
   function closeModal(){modalOpen=false;overlay.classList.add('hidden');document.getElementById('help-btn').focus();}
   function openModal(kind){
     modalOpen=true;const title=document.getElementById('modal-title'),icon=document.getElementById('modal-icon'),copy=document.getElementById('modal-copy'),help=document.getElementById('modal-help'),actions=document.getElementById('modal-actions');
     actions.replaceChildren();help.hidden=true;help.innerHTML='';let heading='',message='',symbol='✦',buttons=[];
-    if(kind==='stats'){
-      const st=sessionStats();heading='Estatísticas da partida';symbol='◷';message=`Pontos: ${st.score.toLocaleString('pt-BR')} · Jogadas: ${st.moves} · Fusões: ${st.merges} · Maior peça: ${st.largest.toLocaleString('pt-BR')} · Tempo: ${timeDisplay(st.seconds)}`;
-      buttons=[['Fechar',closeModal,'primary']];
+    if(kind==='achievements'){
     }else if(kind==='achievements'){
       heading='Conquistas';symbol='★';message=`${unlocked.size} de ${achievements.length} desbloqueadas`;
       help.hidden=false;help.innerHTML=achievements.map(([id,name,desc])=>`<li>${unlocked.has(id)?'✓':'○'} <b>${name}</b>: ${desc}</li>`).join('');
       buttons=[['Fechar',closeModal,'primary']];
     }else if(kind==='help'){
-      heading='Como jogar';symbol='?';message='Combine potências de 3 até atingir 19.683 nas '+boardCount+' casas hexagonais. '+(gameMode==='daily'?'Hoje, cada jogador recebe a mesma sequência de peças.':'');
-      help.hidden=false;help.innerHTML='<li><b>Teclado numérico:</b> 7 = noroeste; 9 = nordeste; 6 = leste; 3 = sudeste; 1 = sudoeste; 4 = oeste. Também funcionam os números da fileira superior.</li><li><b>Celular:</b> toque e segure o tabuleiro para mostrar as seis setas ao redor do dedo. Arraste na direção desejada para mover as peças. Soltar sem arrastar cancela a ação.</li><li>Um gesto rápido de deslizar também funciona no tabuleiro.</li><li>Duas peças iguais geram a próxima potência de 3: 3 e 3 viram 9, 9 e 9 viram 27. Cada peça se funde uma única vez por movimento, e surge uma nova peça após a jogada.</li><li>Use <b>Desfazer</b> para voltar a última jogada. Seu progresso e recorde ficam salvos neste navegador.</li>';
+      heading='Como jogar';symbol='?';message='Some peças iguais até atingir 24.576 nas '+boardCount+' casas hexagonais.';
+      help.hidden=false;help.innerHTML='<li><b>Teclado numérico:</b> 7 = noroeste; 9 = nordeste; 6 = leste; 3 = sudeste; 1 = sudoeste; 4 = oeste. Também funcionam os números da fileira superior.</li><li><b>Celular:</b> toque e segure o tabuleiro para mostrar as seis setas ao redor do dedo. Arraste na direção desejada para mover as peças. Soltar sem arrastar cancela a ação.</li><li>Um gesto rápido de deslizar também funciona no tabuleiro.</li><li>Duas peças iguais se somam: 3 + 3 = 6, 6 + 6 = 12 e 12 + 12 = 24. A pontuação aumenta apenas pelo valor da nova peça. Cada peça se funde uma única vez por movimento, e surge uma nova peça após a jogada.</li><li>Use <b>Desfazer</b> para voltar a última jogada. Seu progresso e recorde ficam salvos neste navegador.</li>';
       buttons=[['Entendi',closeModal,'primary']];
     }else if(kind==='restart'){
       heading='Começar outra partida?';symbol='↻';message='Seu progresso atual será reiniciado, mas seu recorde será mantido.';
       buttons=[['Cancelar',closeModal,'secondary'],['Reiniciar',()=>{closeModal();resetGame();},'primary']];
     }else if(kind==='won'){
-      heading='Você chegou a 19.683!';symbol='★';message=`Você alcançou o objetivo e marcou ${session.score.toLocaleString('pt-BR')} pontos. Pode continuar jogando!`;
+      heading='Você chegou a 24.576!';symbol='★';message=`Você alcançou o objetivo e marcou ${session.score.toLocaleString('pt-BR')} pontos. Pode continuar jogando!`;
       buttons=[['Continuar jogando',closeModal,'primary'],['Novo jogo',()=>{closeModal();resetGame();},'secondary']];
     }else if(kind==='lost'){
       heading='Fim de jogo';symbol='◆';message=`Sem movimentos disponíveis. Você fez ${session.score.toLocaleString('pt-BR')} pontos em ${session.moves} jogadas.`;
@@ -398,7 +375,6 @@ body[data-theme="mono"] #board .tile{filter:grayscale(1)}
   window.addEventListener('appinstalled',()=>{deferredInstall=null;document.getElementById('install-btn').hidden=true;});
   document.getElementById('install-btn').addEventListener('click',async()=>{if(!deferredInstall)return;const e=deferredInstall;deferredInstall=null;document.getElementById('install-btn').hidden=true;try{await e.prompt();}catch(_){}});
   if('serviceWorker' in navigator && location.protocol==='https:')window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
-  document.getElementById('stats-btn').addEventListener('click',()=>openModal('stats'));
   document.getElementById('achievements-btn').addEventListener('click',()=>openModal('achievements'));
   document.getElementById('restart-btn').addEventListener('click',()=>openModal('restart'));
   undoBtn.addEventListener('click',undo);
@@ -407,7 +383,7 @@ body[data-theme="mono"] #board .tile{filter:grayscale(1)}
   overlay.addEventListener('click',event=>{if(event.target===overlay)closeModal();});
   readStorage();if(!session)session=makeSession();if(best<session.score)best=session.score;
   document.querySelectorAll('.sound-waves').forEach(el=>el.style.opacity=soundOn?'1':'.18');
-  window.HEX_GAME_API={snapshot:()=>({mode:gameMode,date:dailyDate,cells:boardCount,score:session.score,moves:session.moves,largest:Math.max(0,...Object.values(session.cells))})};
+  window.HEX_GAME_API={snapshot:()=>({mode:'free',rules:'sum-v2',cells:boardCount,score:session.score,moves:session.moves,largest:Math.max(0,...Object.values(session.cells))})};
   drawBoard();safeSave();fitBoard();window.addEventListener('resize',fitBoard);window.visualViewport?.addEventListener('resize',fitBoard);
 })();
 </script>
