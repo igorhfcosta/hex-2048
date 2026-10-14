@@ -141,7 +141,7 @@ body{--bg:#080713;--panel:#141028;--panel2:#211737;--line:#544078;--text:#fff8ff
   const scoreEl=document.getElementById('score'),bestEl=document.getElementById('best'),movesEl=document.getElementById('moves'),undoBtn=document.getElementById('undo-btn');
   const overlay=document.getElementById('overlay'),toastEl=document.getElementById('toast');
   let session=null,best=0,soundOn=false,audioContext=null,animationBusy=false,modalOpen=false,toastTimer=null;
-  const achievements=[['first','Primeira fusão','Realize a primeira fusão'],['96','Primeiros passos','Alcance 96'],['768','Potência crescente','Alcance 768'],['3072','Meta alcançada','Alcance 3.072'],['12288','Hex mestre','Alcance 12.288'],['24576','Lenda hexagonal','Alcance 24.576'],['100moves','Persistência','Faça 100 jogadas'],['1000pts','Pontuador','Faça 1.000 pontos']];
+  const achievements=[['first','Primeira fusão','Realize a primeira fusão'],['96','Primeiros passos','Alcance 96'],['768','Potência crescente','Alcance 768'],['3072','Meta alcançada','Alcance 3.072'],['6144','Além da meta','Alcance 6.144'],['12288','Hex mestre','Alcance 12.288'],['24576','Lenda hexagonal','Alcance 24.576'],['100moves','Persistência','Faça 100 jogadas'],['1000pts','Pontuador','Faça 1.000 pontos']];
   let unlocked=new Set();
   try{unlocked=new Set(JSON.parse(localStorage.getItem('hex24576_achievements_v1')||'[]'));}catch(_){}
   function unlock(id){if(unlocked.has(id))return;unlocked.add(id);try{localStorage.setItem('hex24576_achievements_v1',JSON.stringify([...unlocked]));}catch(_){}const label=achievements.find(a=>a[0]===id)?.[1];if(label)toast('Conquista: '+label);}
@@ -153,9 +153,9 @@ body{--bg:#080713;--panel:#141028;--panel2:#211737;--line:#544078;--text:#fff8ff
         const ani=c.animate([{transform:'translate(0,0) scale(1)',opacity:1},{transform:`translate(${Math.cos(angle)*HR*.8}px,${Math.sin(angle)*HR*.8}px) scale(.2)`,opacity:0}],{duration:360,easing:'ease-out'});ani.onfinish=()=>c.remove();}
     }
     const highest=Math.max(0,...out.mergedIds.map(id=>session.cells[id]));
-    for(const goal of [768,3072,12288])if(highest>=goal&&!session.milestones.includes(goal)){session.milestones.push(goal);toast('Novo marco: '+goal.toLocaleString('pt-BR')+'!');}
+    for(const goal of [768,3072,6144,12288])if(highest>=goal&&!session.milestones.includes(goal)){session.milestones.push(goal);toast('Novo marco: '+goal.toLocaleString('pt-BR')+'!');}
   }
-  function evaluateAwards(out){if(out.mergedIds.length)unlock('first');const max=Math.max(...Object.values(session.cells));for(const goal of [96,768,3072,12288,24576])if(max>=goal)unlock(String(goal));if(session.moves>=100)unlock('100moves');if(session.score>=1000)unlock('1000pts');}
+  function evaluateAwards(out){if(out.mergedIds.length)unlock('first');const max=Math.max(...Object.values(session.cells));for(const goal of [96,768,3072,6144,12288,24576])if(max>=goal)unlock(String(goal));if(session.moves>=100)unlock('100moves');if(session.score>=1000)unlock('1000pts');}
   function mergeAudio(out){if(!out.mergedIds.length){sound(260,'move');return;}const peak=Math.max(...out.mergedIds.map(id=>session.cells[id]));const tier=Math.round(Math.log(peak/3)/Math.log(2));sound(Math.min(1050,190*Math.pow(2,tier/12)),'merge');}
   const coords=[];
   function node(name,attrs={},text){const el=document.createElementNS(NS,name);for(const [k,v] of Object.entries(attrs))el.setAttribute(k,String(v));if(text!==undefined)el.textContent=text;return el;}
