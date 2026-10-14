@@ -1,8 +1,8 @@
-# HEX 2187
+# HEX 19683
 
-Jogo de fusão numérica em um tabuleiro com **19 casas hexagonais e seis direções**, inspirado no 2048. Nesta versão, as peças seguem as **potências de 3**: `3 → 9 → 27 → 81 → 243 → 729 → 2187`.
+Jogo de fusão numérica em um tabuleiro com **19 casas hexagonais e seis direções**, inspirado no 2048. Nesta versão, as peças seguem as **potências de 3**: `3 → 9 → 27 → 81 → 243 → 729 → 2187 → 6561 → 19683`.
 
-Duas peças iguais criam a próxima potência de 3 (por exemplo, duas peças `3` viram uma peça `9`). A meta é alcançar **2187**; depois, é possível continuar jogando.
+Duas peças iguais criam a próxima potência de 3 (por exemplo, duas peças `3` viram uma peça `9`). A meta é alcançar **19.683 (3⁹)**; depois, é possível continuar jogando.
 
 ## Jogar online
 
@@ -34,7 +34,7 @@ No teclado numérico (mesmo sem Num Lock) ou na fileira superior:
 - Salvamento automático do progresso neste navegador;
 - Arquivo HTML único, sem dependências ou servidor.
 
-**Nota sobre o progresso:** a mudança da progressão de potências de 2 para potências de 3 cria uma partida nova e um novo recorde; a partida antiga não é convertida.
+**Nota sobre o progresso:** ao elevar a meta de 2187 para 19.683, a partida e o recorde existentes são preservados. Se a meta anterior já tiver sido atingida, o aviso de vitória fica disponível novamente ao alcançar a nova meta. A mudança antiga, de potências de 2 para potências de 3, não converteu as partidas do HEX 2048.
 
 ## GitHub Pages
 
