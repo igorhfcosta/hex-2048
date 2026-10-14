@@ -1,7 +1,7 @@
 {
-  "name": "HEX 24576 — quebra-cabeça hexagonal",
-  "short_name": "HEX 24576",
-  "description": "Some peças iguais em seis direções e alcance 24.576. Jogue offline.",
+  "name": "HEX 3072 — quebra-cabeça hexagonal",
+  "short_name": "HEX 3072",
+  "description": "Some peças iguais em seis direções, alcance 3.072 e continue rumo ao lendário 24.576. Jogue offline.",
   "id": "./",
   "start_url": "./",
   "scope": "./",
