@@ -122,7 +122,7 @@ body{--bg:#080713;--panel:#141028;--panel2:#211737;--line:#544078;--text:#fff8ff
   const svg=document.getElementById('board'),cellsLayer=document.getElementById('cell-layer'),tileLayer=document.getElementById('tile-layer');
   const scoreEl=document.getElementById('score'),bestEl=document.getElementById('best'),movesEl=document.getElementById('moves'),undoBtn=document.getElementById('undo-btn');
   const overlay=document.getElementById('overlay'),toastEl=document.getElementById('toast');
-  let session=null,best=0,soundOn=false,audioContext=null,modalOpen=false,toastTimer=null;
+  let session=null,best=0,soundOn=false,audioContext=null,modalOpen=false,toastTimer=null,animationBusy=false;
   const achievements=[['first','Primeira fusão','Realize a primeira fusão'],['96','Primeiros passos','Alcance 96'],['768','Potência crescente','Alcance 768'],['3072','Meta alcançada','Alcance 3.072'],['6144','Além da meta','Alcance 6.144'],['12288','Hex mestre','Alcance 12.288'],['24576','Lenda hexagonal','Alcance 24.576'],['100moves','Persistência','Faça 100 jogadas'],['1000pts','Pontuador','Faça 1.000 pontos']];
   let unlocked=new Set();
   try{unlocked=new Set(JSON.parse(localStorage.getItem('hex24576_achievements_v1')||'[]'));}catch(_){}
@@ -227,19 +227,69 @@ body{--bg:#080713;--panel:#141028;--panel2:#211737;--line:#544078;--text:#fff8ff
     }catch(e){}
   }
   function toast(message){clearTimeout(toastTimer);toastEl.textContent=message;toastEl.classList.add('show');toastTimer=setTimeout(()=>toastEl.classList.remove('show'),2400);}
+  // As peças deslizam juntas por um curto intervalo; só depois exibimos
+  // o resultado das fusões. Sem partículas, filtros ou animação dos fundos.
+  const MOVE_DURATION=135;
+  function animateMoves(paths){
+    const fragment=document.createDocumentFragment(),motions=[];
+    for(const path of paths){
+      const from=cellMap[path.source],to=cellMap[path.target];
+      const piece=tileElement(from,path.value);
+      if(path.source!==path.target){
+        const inner=node('g'),dx=to.x-from.x,dy=to.y-from.y;
+        while(piece.firstChild)inner.appendChild(piece.firstChild);
+        piece.appendChild(inner);
+        motions.push({inner,dx,dy});
+      }
+      fragment.appendChild(piece);
+    }
+    tileLayer.replaceChildren(fragment);
+    for(const {inner,dx,dy} of motions){
+      if(typeof inner.animate==='function'){
+        try{
+          inner.animate(
+            [{transform:'translate(0px, 0px)'},{transform:`translate(${dx}px, ${dy}px)`}],
+            {duration:MOVE_DURATION,easing:'cubic-bezier(.25,.6,.35,1)',fill:'forwards'}
+          );
+        }catch(_){
+          inner.setAttribute('transform',`translate(${dx} ${dy})`);
+        }
+      }else{
+        inner.setAttribute('transform',`translate(${dx} ${dy})`);
+      }
+    }
+  }
   function move(d){
     if(modalOpen||d<0||d>5)return;
-    const out=simulate(session.cells,d);if(!out.changed)return;
+    if(animationBusy)return;
+    const out=simulate(session.cells,d);
+    if(!out.changed)return;
     session.undo={cells:{...session.cells},score:session.score,moves:session.moves,won:session.won,merges:session.merges,milestones:[...session.milestones]};
     session.cells=out.next;session.score+=out.gained;session.moves++;session.merges+=out.mergedIds.length;
     if(session.score>best)best=session.score;
     mergeAudio(out);
+    animationBusy=true;
+    // A partida já fica salva mesmo se a aba for fechada durante a transição.
+    safeSave();
+    if(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches){
+      finishMove(out);
+    }else{
+      animateMoves(out.paths);
+      window.setTimeout(()=>finishMove(out),MOVE_DURATION);
+    }
+  }
+  function finishMove(out){
+    // O número fundido substitui os números de origem, sem efeito explosivo.
     const created=spawn(session.cells);
     drawBoard(created,out.mergedIds);
-    celebrate(out);evaluateAwards(out);
+    celebrate(out);
+    evaluateAwards(out);
+    animationBusy=false;
     if(!session.won&&Object.values(session.cells).some(v=>v>=GOAL)){
       session.won=true;sound(850,'merge');openModal('won');
-    }else if(!legalMove(session.cells))openModal('lost');
+    }else if(!legalMove(session.cells)){
+      openModal('lost');
+    }
     safeSave();
   }
   function fitBoard(){
@@ -252,8 +302,8 @@ body{--bg:#080713;--panel:#141028;--panel2:#211737;--line:#544078;--text:#fff8ff
     const size=Math.max(70,Math.floor(Math.min(560,game.clientWidth,viewportWidth-24,remaining)));
     document.documentElement.style.setProperty('--board-size',size+'px');
   }
-  function resetGame(){session=makeSession();drawBoard();safeSave();toast('Nova partida iniciada.');}
-  function undo(){if(modalOpen||!session.undo)return;const old=session.undo;session.cells={...old.cells};session.score=old.score;session.moves=old.moves;session.won=old.won;session.merges=old.merges??session.merges;session.milestones=old.milestones??session.milestones;session.undo=null;drawBoard();safeSave();toast('Última jogada desfeita.');}
+  function resetGame(){if(animationBusy)return;session=makeSession();drawBoard();safeSave();toast('Nova partida iniciada.');}
+  function undo(){if(animationBusy||modalOpen||!session.undo)return;const old=session.undo;session.cells={...old.cells};session.score=old.score;session.moves=old.moves;session.won=old.won;session.merges=old.merges??session.merges;session.milestones=old.milestones??session.milestones;session.undo=null;drawBoard();safeSave();toast('Última jogada desfeita.');}
   function closeModal(){modalOpen=false;overlay.classList.add('hidden');document.getElementById('help-btn').focus();}
   function openModal(kind){
     modalOpen=true;const title=document.getElementById('modal-title'),icon=document.getElementById('modal-icon'),copy=document.getElementById('modal-copy'),help=document.getElementById('modal-help'),actions=document.getElementById('modal-actions');
