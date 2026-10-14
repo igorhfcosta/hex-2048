@@ -1,11 +1,11 @@
-/* HEX 19683 PWA: cache apenas arquivos do próprio aplicativo. */
-const CACHE='hex-19683-static-v4';
+/* HEX 24576 PWA: cache apenas arquivos do próprio aplicativo. */
+const CACHE='hex-24576-static-v1';
 const ASSETS=['./','./index.html','./manifest.webmanifest','./icon.svg','./icon-192.png','./icon-512.png','./leaderboard.js','./leaderboard-config.js'];
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting()));
 });
 self.addEventListener('activate',event=>{
-  event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('hex-19683-static-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));
+  event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>(k.startsWith('hex-19683-static-')||k.startsWith('hex-24576-static-'))&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));
 });
 self.addEventListener('fetch',event=>{
   const req=event.request,url=new URL(req.url);
