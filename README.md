@@ -23,7 +23,7 @@ No teclado numérico (mesmo sem Num Lock) ou na fileira superior:
 
 `R` abre a confirmação de reinício; `U` desfaz a última jogada.
 
-**Celular:** toque e segure o tabuleiro para exibir o controle radial de seis direções, depois arraste o dedo. Também é possível fazer um deslize rápido.
+**Celular:** toque e segure o tabuleiro para exibir o controle radial de seis direções, depois arraste o dedo. Também é possível fazer um deslize rápido. Em aparelhos e navegadores compatíveis, há uma vibração curta quando o disco aparece (12 ms) e outra ao selecionar uma direção (18 ms).
 
 ## Funcionalidades
 
