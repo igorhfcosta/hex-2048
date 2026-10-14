@@ -117,7 +117,7 @@ body[data-theme="mono"] #board .tile{filter:grayscale(1)}
     <button id="achievements-btn" type="button">Conquistas</button>
     <button id="leaderboard-btn" type="button">Ranking</button>
   </div>
-  <div class="board-wrap"><svg id="board" viewBox="30 30 540 540" role="img" aria-label="Tabuleiro com 19 casas hexagonais"><title>HEX 19683 - tabuleiro interativo</title><g id="cell-layer"></g><g id="tile-layer"></g><g id="fx-layer" pointer-events="none"></g></svg></div>
+  <div class="board-wrap"><svg id="board" viewBox="30 30 540 540" role="img" aria-label="Tabuleiro hexagonal"><title>HEX 19683 - tabuleiro interativo</title><g id="cell-layer"></g><g id="tile-layer"></g><g id="fx-layer" pointer-events="none"></g></svg></div>
   <div class="bottom"><span><strong id="tile-count">2 peças</strong> · <span id="moves">0</span> jogadas</span><span class="bottom-note">Teclado <strong>7 9 4 6 1 3</strong> · Celular: toque e segure</span></div>
 </main></div>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
@@ -126,7 +126,23 @@ body[data-theme="mono"] #board .tile{filter:grayscale(1)}
 <script>
 (()=>{'use strict';
   const NS='http://www.w3.org/2000/svg';
-  const storageKey='hex2187_v1', previousStorageKey='hex2048_v1', GOAL=19683;
+  const params=new URLSearchParams(window.location.search);
+  const boardCount=[7,19,37,61].includes(Number(params.get('size')))?Number(params.get('size')):19;
+  const boardRadius={7:1,19:2,37:3,61:4}[boardCount];
+  const gameMode=params.get('mode')==='daily'?'daily':'free';
+  const dailyDate=new Date().toISOString().slice(0,10); // Todos usam o mesmo dia UTC.
+  const storageKey=gameMode==='daily'?'hex_daily_'+dailyDate+'_'+boardCount+'_v1':boardCount===19?'hex2187_v1':'hex_free_'+boardCount+'_v1';
+  const previousStorageKey='hex2048_v1', GOAL=19683;
+  function stringSeed(str){let h=2166136261;for(const c of str){h=Math.imul(h^c.charCodeAt(0),16777619);}return h>>>0;}
+  const dailySeed=stringSeed('hex2187:'+dailyDate+':'+boardCount);
+  let rngState=dailySeed;
+  function randomUnit(){if(gameMode!=='daily')return Math.random();rngState=(rngState+0x6D2B79F5)>>>0;let t=rngState;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return ((t^(t>>>14))>>>0)/4294967296;}
+  document.getElementById('mode-select').value=gameMode;
+  document.getElementById('size-select').value=String(boardCount);
+  function switchBoard(){const mode=document.getElementById('mode-select').value,size=document.getElementById('size-select').value;const q=new URLSearchParams();if(mode==='daily')q.set('mode','daily');if(size!=='19')q.set('size',size);location.assign(location.pathname+(q.size?'?'+q.toString():''));}
+  document.getElementById('mode-select').addEventListener('change',switchBoard);
+  document.getElementById('size-select').addEventListener('change',switchBoard);
+  document.querySelector('.toolbar-caption').innerHTML=gameMode==='daily'?'Desafio <b>'+dailyDate+'</b> · peças previsíveis':'Combine <b>potências de 3</b>';
   const config={angles:[-120,-60,0,60,120,180],labels:['Noroeste','Nordeste','Leste','Sudeste','Sudoeste','Oeste'],keys:['7','9','6','3','1','4']};
   const keyDirections=Object.fromEntries(config.keys.map((key,index)=>[key,index]));
   const vectors=[[0,-1],[1,-1],[1,0],[0,1],[-1,1],[-1,0]];
@@ -157,8 +173,8 @@ body[data-theme="mono"] #board .tile{filter:grayscale(1)}
   function mergeAudio(out){if(!out.mergedIds.length){sound(260,'move');return;}const peak=Math.max(...out.mergedIds.map(id=>session.cells[id]));const tier=Math.round(Math.log(peak)/Math.log(3));sound(Math.min(1050,190*Math.pow(2,tier/12)),'merge');}
   const coords=[];
   function node(name,attrs={},text){const el=document.createElementNS(NS,name);for(const [k,v] of Object.entries(attrs))el.setAttribute(k,String(v));if(text!==undefined)el.textContent=text;return el;}
-  const HR=53;
-  for(let q=-2;q<=2;q++)for(let r=-2;r<=2;r++)if(Math.abs(q+r)<=2)coords.push({id:`${q},${r}`,q,r,x:300+Math.sqrt(3)*HR*(q+r/2),y:300+1.5*HR*r});
+  const HR=157/(boardRadius+1);
+  for(let q=-boardRadius;q<=boardRadius;q++)for(let r=-boardRadius;r<=boardRadius;r++)if(Math.abs(q+r)<=boardRadius)coords.push({id:`${q},${r}`,q,r,x:300+Math.sqrt(3)*HR*(q+r/2),y:300+1.5*HR*r});
   const cellMap=Object.fromEntries(coords.map(p=>[p.id,p]));
   function lanesFor(d){
     const parts=new Map(), angle=config.angles[d]*Math.PI/180,dx=Math.cos(angle),dy=Math.sin(angle);
@@ -173,11 +189,12 @@ body[data-theme="mono"] #board .tile{filter:grayscale(1)}
   const LINES=config.angles.map((_,d)=>lanesFor(d));
   function isPowerOfThree(v){if(!Number.isSafeInteger(v)||v<3)return false;while(v>1&&v%3===0)v/=3;return v===1;}
   function validCells(s){return s?.cells&&coords.every(p=>s.cells[p.id]===0||isPowerOfThree(s.cells[p.id]));}
-  function safeSave(){try{localStorage.setItem(storageKey,JSON.stringify({session,best,soundOn,goal:GOAL}));}catch(e){}}
+  function safeSave(){try{localStorage.setItem(storageKey,JSON.stringify({session,best,soundOn,goal:GOAL,rngState}));}catch(e){}}
   function readStorage(){
     try{
       const raw=JSON.parse(localStorage.getItem(storageKey));
       const legacy=raw?null:JSON.parse(localStorage.getItem(previousStorageKey));
+      if(gameMode==='daily'&&Number.isInteger(raw?.rngState))rngState=raw.rngState>>>0;
       if(validCells(raw?.session))session={cells:Object.fromEntries(coords.map(p=>[p.id,raw.session.cells[p.id]])),score:Math.max(0,Number(raw.session.score)||0),moves:Math.max(0,Number(raw.session.moves)||0),won:raw.goal===GOAL&&!!raw.session.won,undo:null,merges:Math.max(0,Number(raw.session.merges)||0),startedAt:Number(raw.session.startedAt)||Date.now(),milestones:Array.isArray(raw.session.milestones)?raw.session.milestones:[]};
       if(Number.isFinite(raw?.best))best=Math.max(0,Math.floor(raw.best));
       const oldSound=raw?.soundOn??legacy?.soundOn;
@@ -185,8 +202,8 @@ body[data-theme="mono"] #board .tile{filter:grayscale(1)}
     }catch(e){}
   }
   function emptyCells(){return Object.fromEntries(coords.map(p=>[p.id,0]));}
-  function spawn(cells){const spaces=coords.map(p=>p.id).filter(id=>!cells[id]);if(!spaces.length)return null;const id=spaces[Math.floor(Math.random()*spaces.length)];cells[id]=Math.random()<.9?3:9;return id;}
-  function makeSession(){const cells=emptyCells();spawn(cells);spawn(cells);return {cells,score:0,moves:0,won:false,undo:null,merges:0,startedAt:Date.now(),milestones:[]};}
+  function spawn(cells){const spaces=coords.map(p=>p.id).filter(id=>!cells[id]);if(!spaces.length)return null;const id=spaces[Math.floor(randomUnit()*spaces.length)];cells[id]=randomUnit()<.9?3:9;return id;}
+  function makeSession(){if(gameMode==='daily')rngState=dailySeed;const cells=emptyCells();spawn(cells);spawn(cells);return {cells,score:0,moves:0,won:false,undo:null,merges:0,startedAt:Date.now(),milestones:[]};}
   function simulate(cells,d){
     const next={...cells};let gained=0,changed=false;const mergedIds=[],paths=[];
     for(const lane of LINES[d]){
@@ -207,12 +224,12 @@ body[data-theme="mono"] #board .tile{filter:grayscale(1)}
   const colors={3:['#e5f8ee','#193329'],9:['#baf1d6','#153c31'],27:['#83d8d1','#153b43'],81:['#77b9fa','#152f50'],243:['#b09df9','#29224e'],729:['#d98af4','#42254f'],2187:['#f5a5bd','#522b44'],6561:['#f9b48e','#5d3028'],19683:['#ffce7c','#56381b'],59049:['#e8e47b','#3f421f'],177147:['#fef0a4','#5c451b']};
   function theme(value){return colors[value]||['#ffd77d','#55401a'];}
   function polyPoints(radius,offset=-90){return Array.from({length:6},(_,k)=>{const a=(offset+k*60)*Math.PI/180;return `${(Math.cos(a)*radius).toFixed(3)},${(Math.sin(a)*radius).toFixed(3)}`;}).join(' ');}
-  function shape(fill,isBg=false){return node('polygon',{points:polyPoints(51),fill,class:isBg?'cell-bg':'tile-shape','stroke-linejoin':'round'});}
+  function shape(fill,isBg=false){return node('polygon',{points:polyPoints(HR*.965),fill,class:isBg?'cell-bg':'tile-shape','stroke-linejoin':'round'});}
   function tileElement(p,value,cls=''){
     const [bg,fg]=theme(value),g=node('g',{class:`tile ${cls}`.trim(),style:`transform-origin:${p.x}px ${p.y}px`});
     g.setAttribute('transform',`translate(${p.x} ${p.y})`);
     g.appendChild(shape(bg));
-    const digits=String(value).length,maxFont=Math.max(12,35-Math.max(0,digits-2)*6);
+    const digits=String(value).length,maxFont=Math.max(9,Math.min(HR*.69,35-Math.max(0,digits-2)*6));
     g.appendChild(node('text',{'class':'tile-value',x:0,y:1,'font-size':maxFont,fill:fg},String(value)));
     return g;
   }
@@ -233,7 +250,7 @@ body[data-theme="mono"] #board .tile{filter:grayscale(1)}
   function move(d){
     if(animationBusy||modalOpen||d<0||d>5)return;
     const out=simulate(session.cells,d);if(!out.changed)return;
-    session.undo={cells:{...session.cells},score:session.score,moves:session.moves,won:session.won,merges:session.merges,milestones:[...session.milestones]};
+    session.undo={cells:{...session.cells},score:session.score,moves:session.moves,won:session.won,merges:session.merges,milestones:[...session.milestones],rngState};
     session.cells=out.next;session.score+=out.gained;session.moves++;session.merges+=out.mergedIds.length;
     if(session.score>best)best=session.score;
     animationBusy=true;mergeAudio(out);
@@ -261,7 +278,7 @@ body[data-theme="mono"] #board .tile{filter:grayscale(1)}
     document.documentElement.style.setProperty('--board-size',size+'px');
   }
   function resetGame(){session=makeSession();drawBoard();safeSave();toast('Nova partida iniciada.');}
-  function undo(){if(animationBusy||modalOpen||!session.undo)return;const old=session.undo;session.cells={...old.cells};session.score=old.score;session.moves=old.moves;session.won=old.won;session.merges=old.merges??session.merges;session.milestones=old.milestones??session.milestones;session.undo=null;drawBoard();safeSave();toast('Última jogada desfeita.');}
+  function undo(){if(animationBusy||modalOpen||!session.undo)return;const old=session.undo;session.cells={...old.cells};session.score=old.score;session.moves=old.moves;session.won=old.won;session.merges=old.merges??session.merges;session.milestones=old.milestones??session.milestones;if(gameMode==='daily'&&Number.isInteger(old.rngState))rngState=old.rngState;session.undo=null;drawBoard();safeSave();toast('Última jogada desfeita.');}
   function closeModal(){modalOpen=false;overlay.classList.add('hidden');document.getElementById('help-btn').focus();}
   function openModal(kind){
     modalOpen=true;const title=document.getElementById('modal-title'),icon=document.getElementById('modal-icon'),copy=document.getElementById('modal-copy'),help=document.getElementById('modal-help'),actions=document.getElementById('modal-actions');
@@ -274,7 +291,7 @@ body[data-theme="mono"] #board .tile{filter:grayscale(1)}
       help.hidden=false;help.innerHTML=achievements.map(([id,name,desc])=>`<li>${unlocked.has(id)?'✓':'○'} <b>${name}</b>: ${desc}</li>`).join('');
       buttons=[['Fechar',closeModal,'primary']];
     }else if(kind==='help'){
-      heading='Como jogar';symbol='?';message='Combine potências de 3 até atingir 19.683 nas 19 casas hexagonais.';
+      heading='Como jogar';symbol='?';message='Combine potências de 3 até atingir 19.683 nas '+boardCount+' casas hexagonais. '+(gameMode==='daily'?'Hoje, cada jogador recebe a mesma sequência de peças.':'');
       help.hidden=false;help.innerHTML='<li><b>Teclado numérico:</b> 7 = noroeste; 9 = nordeste; 6 = leste; 3 = sudeste; 1 = sudoeste; 4 = oeste. Também funcionam os números da fileira superior.</li><li><b>Celular:</b> toque e segure o tabuleiro para mostrar as seis setas ao redor do dedo. Arraste na direção desejada para mover as peças. Soltar sem arrastar cancela a ação.</li><li>Um gesto rápido de deslizar também funciona no tabuleiro.</li><li>Duas peças iguais geram a próxima potência de 3: 3 e 3 viram 9, 9 e 9 viram 27. Cada peça se funde uma única vez por movimento, e surge uma nova peça após a jogada.</li><li>Use <b>Desfazer</b> para voltar a última jogada. Seu progresso e recorde ficam salvos neste navegador.</li>';
       buttons=[['Entendi',closeModal,'primary']];
     }else if(kind==='restart'){
