@@ -21,6 +21,21 @@ button:focus-visible{outline:2px solid var(--mint);outline-offset:3px}
 .identity-title span{color:var(--mint)}
 .identity-sub{margin:7px 0 0;color:var(--muted);font-size:clamp(10px,2.2vw,13px);line-height:1.2;font-weight:650}
 .identity-sub strong{color:var(--mint)}
+.variants{display:flex;align-items:center;justify-content:center;gap:5px;width:100%;flex-wrap:wrap}
+.variants select,.variants button{appearance:none;color:var(--text);background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:5px 7px;font-size:clamp(9px,2.3vw,12px);font-weight:700;min-height:29px}
+.variants button:hover,.variants select:focus-visible{border-color:var(--mint)}
+body[data-theme="light"]{--bg:#f5f2eb;--panel:#eee9e0;--panel2:#e5e0d8;--line:#c8bfb3;--text:#302c36;--muted:#67616a;--mint:#257f6b;--purple:#6a4ac1;--gold:#a85d20;background:#f5f2eb}
+body[data-theme="light"] .board-wrap{background:#dedbd4;border-color:#c6bdb3;box-shadow:0 7px 25px #7772}
+body[data-theme="light"] #cell-layer .cell-bg{fill:#c8c9c8;stroke:#aeb2b5}
+body[data-theme="light"] .score{background:#e0d9cc;border-color:#cbbfb1}
+body[data-theme="light"] .score small{color:#665e55}
+body[data-theme="light"] .score strong{color:#282633}
+body[data-theme="light"] .icon-button{background:#d9d3c8;color:#433c49;border-color:#bab2a7}
+body[data-theme="neon"]{--bg:#080713;--panel:#141028;--panel2:#211737;--line:#544078;--text:#fff8ff;--mint:#4ef5d5;--purple:#e189ff;--gold:#faff8b;background:radial-gradient(circle at 30% 30%,#271347 0%,#080713 75%)}
+body[data-theme="neon"] #board .tile{filter:drop-shadow(0 0 8px #4ef5d555)}
+body[data-theme="mono"]{--bg:#0f1318;--panel:#191f27;--panel2:#252c36;--line:#4a5767;--text:#f6f6f6;--muted:#bdc4cd;--mint:#e6e9ef;--purple:#bbc3ce;--gold:#e8e9ee;background:#111820}
+body[data-theme="mono"] #board .tile{filter:grayscale(1)}
+@media(max-height:450px){.variants{gap:3px}.variants select,.variants button{min-height:23px;padding:3px 5px;font-size:10px}}
 .stats{display:flex;gap:clamp(5px,1.4vw,10px);flex:none}
 .score{background:#232b40;border:1px solid #38455e;border-radius:13px;min-width:clamp(76px,21vw,112px);padding:9px clamp(6px,2vw,13px);text-align:center;box-shadow:0 3px 12px #0002}
 .score small{display:block;color:#aab7d1;text-transform:uppercase;font-weight:850;font-size:clamp(8px,1.8vw,10px);letter-spacing:.5px}
@@ -94,7 +109,15 @@ button:focus-visible{outline:2px solid var(--mint);outline-offset:3px}
       <button class="icon-button" id="help-btn" title="Como jogar" aria-label="Como jogar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 4.1 2c-1.15.85-1.6 1.3-1.6 2.5M12 17h.01"/></svg></button>
     </div>
   </div>
-  <div class="board-wrap"><svg id="board" viewBox="30 30 540 540" role="img" aria-label="Tabuleiro com 19 casas hexagonais"><title>HEX 19683 - tabuleiro interativo</title><g id="cell-layer"></g><g id="tile-layer"></g></svg></div>
+  <div class="variants" aria-label="Modos e opções">
+    <select id="mode-select" aria-label="Modo de jogo"><option value="free">Livre</option><option value="daily">Desafio diário</option></select>
+    <select id="size-select" aria-label="Tamanho do tabuleiro"><option value="7">7 casas</option><option value="19">19 casas</option><option value="37">37 casas</option><option value="61">61 casas</option></select>
+    <select id="theme-select" aria-label="Tema visual"><option value="dark">Original</option><option value="light">Claro</option><option value="neon">Neon</option><option value="mono">Monocromático</option></select>
+    <button id="stats-btn" type="button">Estatísticas</button>
+    <button id="achievements-btn" type="button">Conquistas</button>
+    <button id="leaderboard-btn" type="button">Ranking</button>
+  </div>
+  <div class="board-wrap"><svg id="board" viewBox="30 30 540 540" role="img" aria-label="Tabuleiro com 19 casas hexagonais"><title>HEX 19683 - tabuleiro interativo</title><g id="cell-layer"></g><g id="tile-layer"></g><g id="fx-layer" pointer-events="none"></g></svg></div>
   <div class="bottom"><span><strong id="tile-count">2 peças</strong> · <span id="moves">0</span> jogadas</span><span class="bottom-note">Teclado <strong>7 9 4 6 1 3</strong> · Celular: toque e segure</span></div>
 </main></div>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
@@ -111,6 +134,27 @@ button:focus-visible{outline:2px solid var(--mint);outline-offset:3px}
   const scoreEl=document.getElementById('score'),bestEl=document.getElementById('best'),movesEl=document.getElementById('moves'),undoBtn=document.getElementById('undo-btn');
   const overlay=document.getElementById('overlay'),toastEl=document.getElementById('toast');
   let session=null,best=0,soundOn=false,audioContext=null,animationBusy=false,modalOpen=false,toastTimer=null;
+  const achievements=[['first','Primeira fusão','Realize a primeira fusão'],['81','Primeiros passos','Alcance 81'],['729','Potência crescente','Alcance 729'],['2187','Veterano','Alcance 2.187'],['6561','Hex mestre','Alcance 6.561'],['19683','Lenda hexagonal','Alcance 19.683'],['100moves','Persistência','Faça 100 jogadas'],['1000pts','Pontuador','Faça 1.000 pontos'],['daily','Ritual diário','Jogue o desafio diário']];
+  let unlocked=new Set();
+  try{unlocked=new Set(JSON.parse(localStorage.getItem('hex2187_achievements_v1')||'[]'));}catch(_){}
+  function unlock(id){if(unlocked.has(id))return;unlocked.add(id);try{localStorage.setItem('hex2187_achievements_v1',JSON.stringify([...unlocked]));}catch(_){}const label=achievements.find(a=>a[0]===id)?.[1];if(label)toast('Conquista: '+label);}
+  let themeChoice='dark';try{themeChoice=localStorage.getItem('hex2187_theme')||'dark';}catch(_){}
+  if(!['dark','light','neon','mono'].includes(themeChoice))themeChoice='dark';
+  document.body.dataset.theme=themeChoice;document.getElementById('theme-select').value=themeChoice;
+  document.getElementById('theme-select').addEventListener('change',e=>{themeChoice=e.target.value;document.body.dataset.theme=themeChoice;try{localStorage.setItem('hex2187_theme',themeChoice)}catch(_){};});
+  function sessionStats(){return {seconds:Math.max(0,Math.floor((Date.now()-(session?.startedAt||Date.now()))/1000)),merges:session?.merges||0,largest:Math.max(0,...Object.values(session?.cells||{})),moves:session?.moves||0,score:session?.score||0};}
+  function timeDisplay(t){return [Math.floor(t/3600),Math.floor(t%3600/60),t%60].map(x=>String(x).padStart(2,'0')).join(':');}
+  function celebrate(out){
+    const fx=document.getElementById('fx-layer');
+    for(const id of out.mergedIds){const p=cellMap[id];if(!p)continue;
+      for(let i=0;i<7;i++){const angle=i*Math.PI*2/7,c=node('circle',{cx:p.x,cy:p.y,r:Math.max(2,HR*.07),fill:'#b1ffde',opacity:.9});fx.appendChild(c);
+        const ani=c.animate([{transform:'translate(0,0) scale(1)',opacity:1},{transform:`translate(${Math.cos(angle)*HR*.8}px,${Math.sin(angle)*HR*.8}px) scale(.2)`,opacity:0}],{duration:360,easing:'ease-out'});ani.onfinish=()=>c.remove();}
+    }
+    const highest=Math.max(0,...out.mergedIds.map(id=>session.cells[id]));
+    for(const goal of [729,2187,6561])if(highest>=goal&&!session.milestones.includes(goal)){session.milestones.push(goal);toast('Novo marco: '+goal.toLocaleString('pt-BR')+'!');}
+  }
+  function evaluateAwards(out){if(out.mergedIds.length)unlock('first');const max=Math.max(...Object.values(session.cells));for(const goal of [81,729,2187,6561,19683])if(max>=goal)unlock(String(goal));if(session.moves>=100)unlock('100moves');if(session.score>=1000)unlock('1000pts');if(gameMode==='daily')unlock('daily');}
+  function mergeAudio(out){if(!out.mergedIds.length){sound(260,'move');return;}const peak=Math.max(...out.mergedIds.map(id=>session.cells[id]));const tier=Math.round(Math.log(peak)/Math.log(3));sound(Math.min(1050,190*Math.pow(2,tier/12)),'merge');}
   const coords=[];
   function node(name,attrs={},text){const el=document.createElementNS(NS,name);for(const [k,v] of Object.entries(attrs))el.setAttribute(k,String(v));if(text!==undefined)el.textContent=text;return el;}
   const HR=53;
@@ -134,7 +178,7 @@ button:focus-visible{outline:2px solid var(--mint);outline-offset:3px}
     try{
       const raw=JSON.parse(localStorage.getItem(storageKey));
       const legacy=raw?null:JSON.parse(localStorage.getItem(previousStorageKey));
-      if(validCells(raw?.session))session={cells:Object.fromEntries(coords.map(p=>[p.id,raw.session.cells[p.id]])),score:Math.max(0,Number(raw.session.score)||0),moves:Math.max(0,Number(raw.session.moves)||0),won:raw.goal===GOAL&&!!raw.session.won,undo:null};
+      if(validCells(raw?.session))session={cells:Object.fromEntries(coords.map(p=>[p.id,raw.session.cells[p.id]])),score:Math.max(0,Number(raw.session.score)||0),moves:Math.max(0,Number(raw.session.moves)||0),won:raw.goal===GOAL&&!!raw.session.won,undo:null,merges:Math.max(0,Number(raw.session.merges)||0),startedAt:Number(raw.session.startedAt)||Date.now(),milestones:Array.isArray(raw.session.milestones)?raw.session.milestones:[]};
       if(Number.isFinite(raw?.best))best=Math.max(0,Math.floor(raw.best));
       const oldSound=raw?.soundOn??legacy?.soundOn;
       if(typeof oldSound==='boolean')soundOn=oldSound;
@@ -142,7 +186,7 @@ button:focus-visible{outline:2px solid var(--mint);outline-offset:3px}
   }
   function emptyCells(){return Object.fromEntries(coords.map(p=>[p.id,0]));}
   function spawn(cells){const spaces=coords.map(p=>p.id).filter(id=>!cells[id]);if(!spaces.length)return null;const id=spaces[Math.floor(Math.random()*spaces.length)];cells[id]=Math.random()<.9?3:9;return id;}
-  function makeSession(){const cells=emptyCells();spawn(cells);spawn(cells);return {cells,score:0,moves:0,won:false,undo:null};}
+  function makeSession(){const cells=emptyCells();spawn(cells);spawn(cells);return {cells,score:0,moves:0,won:false,undo:null,merges:0,startedAt:Date.now(),milestones:[]};}
   function simulate(cells,d){
     const next={...cells};let gained=0,changed=false;const mergedIds=[],paths=[];
     for(const lane of LINES[d]){
@@ -189,10 +233,10 @@ button:focus-visible{outline:2px solid var(--mint);outline-offset:3px}
   function move(d){
     if(animationBusy||modalOpen||d<0||d>5)return;
     const out=simulate(session.cells,d);if(!out.changed)return;
-    session.undo={cells:{...session.cells},score:session.score,moves:session.moves,won:session.won};
-    session.cells=out.next;session.score+=out.gained;session.moves++;
+    session.undo={cells:{...session.cells},score:session.score,moves:session.moves,won:session.won,merges:session.merges,milestones:[...session.milestones]};
+    session.cells=out.next;session.score+=out.gained;session.moves++;session.merges+=out.mergedIds.length;
     if(session.score>best)best=session.score;
-    animationBusy=true;sound(out.gained?555:350,out.gained?'merge':'move');
+    animationBusy=true;mergeAudio(out);
     tileLayer.replaceChildren();
     for(const path of out.paths){const src=cellMap[path.source],dst=cellMap[path.target],piece=tileElement(src,path.value);tileLayer.appendChild(piece);
       if(path.source!==path.target){const x=dst.x-src.x,y=dst.y-src.y,mover=node('g');while(piece.firstChild)mover.appendChild(piece.firstChild);piece.appendChild(mover);
@@ -200,6 +244,7 @@ button:focus-visible{outline:2px solid var(--mint);outline-offset:3px}
       }
     }
     setTimeout(()=>{const created=spawn(session.cells);drawBoard(created,out.mergedIds);safeSave();animationBusy=false;
+      celebrate(out);evaluateAwards(out);
       if(!session.won&&Object.values(session.cells).some(v=>v>=GOAL)){session.won=true;safeSave();sound(850,'merge');openModal('won');}
       else if(!legalMove(session.cells))openModal('lost');
     },160);
@@ -211,17 +256,24 @@ button:focus-visible{outline:2px solid var(--mint);outline-offset:3px}
     const viewportWidth=window.visualViewport?.width||window.innerWidth;
     const spacing=parseFloat(getComputedStyle(game).rowGap)||12;
     const padding=parseFloat(getComputedStyle(app).paddingTop)||12;
-    const remaining=height-hud.offsetHeight-toolbar.offsetHeight-bottom.offsetHeight-spacing*3-padding*2-4;
+    const variants=document.querySelector('.variants');const remaining=height-hud.offsetHeight-toolbar.offsetHeight-bottom.offsetHeight-variants.offsetHeight-spacing*4-padding*2-4;
     const size=Math.max(90,Math.floor(Math.min(560,game.clientWidth,viewportWidth-24,remaining)));
     document.documentElement.style.setProperty('--board-size',size+'px');
   }
   function resetGame(){session=makeSession();drawBoard();safeSave();toast('Nova partida iniciada.');}
-  function undo(){if(animationBusy||modalOpen||!session.undo)return;const old=session.undo;session.cells={...old.cells};session.score=old.score;session.moves=old.moves;session.won=old.won;session.undo=null;drawBoard();safeSave();toast('Última jogada desfeita.');}
+  function undo(){if(animationBusy||modalOpen||!session.undo)return;const old=session.undo;session.cells={...old.cells};session.score=old.score;session.moves=old.moves;session.won=old.won;session.merges=old.merges??session.merges;session.milestones=old.milestones??session.milestones;session.undo=null;drawBoard();safeSave();toast('Última jogada desfeita.');}
   function closeModal(){modalOpen=false;overlay.classList.add('hidden');document.getElementById('help-btn').focus();}
   function openModal(kind){
     modalOpen=true;const title=document.getElementById('modal-title'),icon=document.getElementById('modal-icon'),copy=document.getElementById('modal-copy'),help=document.getElementById('modal-help'),actions=document.getElementById('modal-actions');
     actions.replaceChildren();help.hidden=true;help.innerHTML='';let heading='',message='',symbol='✦',buttons=[];
-    if(kind==='help'){
+    if(kind==='stats'){
+      const st=sessionStats();heading='Estatísticas da partida';symbol='◷';message=`Pontos: ${st.score.toLocaleString('pt-BR')} · Jogadas: ${st.moves} · Fusões: ${st.merges} · Maior peça: ${st.largest.toLocaleString('pt-BR')} · Tempo: ${timeDisplay(st.seconds)}`;
+      buttons=[['Fechar',closeModal,'primary']];
+    }else if(kind==='achievements'){
+      heading='Conquistas';symbol='★';message=`${unlocked.size} de ${achievements.length} desbloqueadas`;
+      help.hidden=false;help.innerHTML=achievements.map(([id,name,desc])=>`<li>${unlocked.has(id)?'✓':'○'} <b>${name}</b>: ${desc}</li>`).join('');
+      buttons=[['Fechar',closeModal,'primary']];
+    }else if(kind==='help'){
       heading='Como jogar';symbol='?';message='Combine potências de 3 até atingir 19.683 nas 19 casas hexagonais.';
       help.hidden=false;help.innerHTML='<li><b>Teclado numérico:</b> 7 = noroeste; 9 = nordeste; 6 = leste; 3 = sudeste; 1 = sudoeste; 4 = oeste. Também funcionam os números da fileira superior.</li><li><b>Celular:</b> toque e segure o tabuleiro para mostrar as seis setas ao redor do dedo. Arraste na direção desejada para mover as peças. Soltar sem arrastar cancela a ação.</li><li>Um gesto rápido de deslizar também funciona no tabuleiro.</li><li>Duas peças iguais geram a próxima potência de 3: 3 e 3 viram 9, 9 e 9 viram 27. Cada peça se funde uma única vez por movimento, e surge uma nova peça após a jogada.</li><li>Use <b>Desfazer</b> para voltar a última jogada. Seu progresso e recorde ficam salvos neste navegador.</li>';
       buttons=[['Entendi',closeModal,'primary']];
@@ -318,6 +370,8 @@ button:focus-visible{outline:2px solid var(--mint);outline-offset:3px}
       e.preventDefault();move(keyDirections[number]);
     }
   });
+  document.getElementById('stats-btn').addEventListener('click',()=>openModal('stats'));
+  document.getElementById('achievements-btn').addEventListener('click',()=>openModal('achievements'));
   document.getElementById('restart-btn').addEventListener('click',()=>openModal('restart'));
   undoBtn.addEventListener('click',undo);
   document.getElementById('help-btn').addEventListener('click',()=>openModal('help'));
