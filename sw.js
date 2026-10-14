@@ -1,6 +1,6 @@
 /* HEX 19683 PWA: cache apenas arquivos do próprio aplicativo. */
-const CACHE='hex-19683-static-v3';
-const ASSETS=['./','./index.html','./manifest.webmanifest','./icon.svg','./leaderboard.js','./leaderboard-config.js'];
+const CACHE='hex-19683-static-v4';
+const ASSETS=['./','./index.html','./manifest.webmanifest','./icon.svg','./icon-192.png','./icon-512.png','./leaderboard.js','./leaderboard-config.js'];
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting()));
 });
