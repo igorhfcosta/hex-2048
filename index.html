@@ -251,6 +251,11 @@ button:focus-visible{outline:2px solid var(--mint);outline-offset:3px}
     radial.appendChild(target);radialArrows.push(target);
   });
   let pointerStart=null;
+  // Vibração sutil apenas em toques, quando o navegador e o aparelho permitem.
+  function vibrateTouch(state,milliseconds){
+    if(state?.pointerType!=='touch')return;
+    try{if(typeof navigator.vibrate==='function')navigator.vibrate(milliseconds);}catch(_){/* Vibração opcional. */}
+  }
   function showRadial(state){
     const margin=100;
     radial.style.left=`${Math.max(margin,Math.min(window.innerWidth-margin,state.x))}px`;
@@ -258,6 +263,7 @@ button:focus-visible{outline:2px solid var(--mint);outline-offset:3px}
     radial.classList.remove('committed');radialCenter.lastElementChild.textContent='Arraste';
     radialArrows.forEach(arrow=>arrow.classList.remove('active'));
     radial.classList.add('visible');state.visible=true;
+    vibrateTouch(state,12); // Disco aberto.
   }
   function hideRadial(){radial.classList.remove('visible','committed');radialArrows.forEach(arrow=>arrow.classList.remove('active'));}
   function releasePointer(){
@@ -268,7 +274,7 @@ button:focus-visible{outline:2px solid var(--mint);outline-offset:3px}
   svg.addEventListener('contextmenu',e=>e.preventDefault());
   svg.addEventListener('pointerdown',e=>{
     if(modalOpen||animationBusy||pointerStart||!e.isPrimary)return;
-    const state={id:e.pointerId,x:e.clientX,y:e.clientY,visible:false,moved:false,committed:false,holdTimer:null};
+    const state={id:e.pointerId,pointerType:e.pointerType,x:e.clientX,y:e.clientY,visible:false,moved:false,committed:false,holdTimer:null};
     pointerStart=state;
     try{svg.setPointerCapture(e.pointerId)}catch(_){}
     state.holdTimer=setTimeout(()=>{if(pointerStart===state&&!state.moved&&!state.committed)showRadial(state);},185);
@@ -283,6 +289,7 @@ button:focus-visible{outline:2px solid var(--mint);outline-offset:3px}
     radialArrows.forEach((arrow,index)=>arrow.classList.toggle('active',distance>17&&index===direction));
     if(distance>=49){
       state.committed=true;
+      vibrateTouch(state,18); // Direção escolhida no controle radial.
       radial.classList.add('committed');radialCenter.lastElementChild.textContent='Movido';
       move(direction);
     }
@@ -291,7 +298,10 @@ button:focus-visible{outline:2px solid var(--mint);outline-offset:3px}
     const state=pointerStart;
     if(!state||state.id!==e.pointerId)return;
     const dx=e.clientX-state.x,dy=e.clientY-state.y;
-    if(!state.committed&&Math.hypot(dx,dy)>25)move(closestDirection(dx,dy));
+    if(!state.committed&&Math.hypot(dx,dy)>25){
+      vibrateTouch(state,18); // Confirma também o gesto rápido sem disco.
+      move(closestDirection(dx,dy));
+    }
     releasePointer();
   });
   svg.addEventListener('pointercancel',releasePointer);
