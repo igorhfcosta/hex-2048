@@ -31,6 +31,7 @@
     const [app,auth,db]=await Promise.all([import(root+'firebase-app.js'),import(root+'firebase-auth.js'),import(root+'firebase-firestore.js')]);
     const firebaseApp=app.getApps().find(item=>item.name==='hex2187-ranking')||app.initializeApp(cfg,'hex2187-ranking');
     const identity=auth.getAuth(firebaseApp);
+    if(typeof identity.authStateReady==='function')await identity.authStateReady();
     if(!identity.currentUser)await auth.signInAnonymously(identity);
     fb={auth,db,identity,store:db.getFirestore(firebaseApp)};
     return fb;
@@ -68,7 +69,7 @@
       const prior=await x.db.getDoc(doc);
       if(prior.exists()&&Number(prior.data().score)>=s.score){status('Você já registrou uma pontuação igual ou superior neste modo.');return;}
       await x.db.setDoc(doc,{alias,score:Math.floor(s.score),moves:Math.floor(s.moves),largest:Math.floor(s.largest),updatedAt:x.db.serverTimestamp()});
-      try{localStorage.setItem('hex2187_alias',alias)}catch(_){}
+      try{localStorage.setItem('hex24576_alias',alias)}catch(_){}
       await refresh();status('Pontuação enviada com sucesso.');
     }catch(err){status('Falha ao enviar. Confira sua conexão e as permissões do Firestore. ('+String(err?.code||'erro')+')');}
     finally{busy=false;$('rank-send').disabled=false;}
