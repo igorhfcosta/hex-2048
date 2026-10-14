@@ -4,8 +4,8 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <meta name="theme-color" content="#0b0e19" />
-<meta name="description" content="HEX 2187: combine potências de 3 em 19 casas hexagonais e seis direções." />
-<title>HEX 2187 · Jogo de fusão hexagonal</title>
+<meta name="description" content="HEX 19683: combine potências de 3 em 19 casas hexagonais e seis direções até atingir 19.683." />
+<title>HEX 19683 · Jogo de fusão hexagonal</title>
 <style>
 :root{color-scheme:dark;--bg:#0b0e19;--panel:#14182a;--panel2:#1a1f35;--line:#2e3653;--text:#f6f7ff;--muted:#a0abc7;--mint:#85f1c5;--purple:#ac9af9;--gold:#fdd591;--board-size:400px}
 *,*::before,*::after{box-sizing:border-box}
@@ -20,6 +20,7 @@ button:focus-visible{outline:2px solid var(--mint);outline-offset:3px}
 .identity-title{font-size:clamp(32px,7vw,55px);line-height:.95;font-weight:900;letter-spacing:-2px;white-space:nowrap}
 .identity-title span{color:var(--mint)}
 .identity-sub{margin:7px 0 0;color:var(--muted);font-size:clamp(10px,2.2vw,13px);line-height:1.2;font-weight:650}
+.identity-sub strong{color:var(--mint)}
 .stats{display:flex;gap:clamp(5px,1.4vw,10px);flex:none}
 .score{background:#232b40;border:1px solid #38455e;border-radius:13px;min-width:clamp(76px,21vw,112px);padding:9px clamp(6px,2vw,13px);text-align:center;box-shadow:0 3px 12px #0002}
 .score small{display:block;color:#aab7d1;text-transform:uppercase;font-weight:850;font-size:clamp(8px,1.8vw,10px);letter-spacing:.5px}
@@ -81,8 +82,8 @@ button:focus-visible{outline:2px solid var(--mint);outline-offset:3px}
 </style>
 </head>
 <body>
-<div class="app"><main class="game" aria-label="HEX 2187">
-  <header class="hud"><div class="identity"><div class="identity-title">HEX <span>2187</span></div><p class="identity-sub">Seis direções. Um novo desafio.</p></div>
+<div class="app"><main class="game" aria-label="HEX 19683">
+  <header class="hud"><div class="identity"><div class="identity-title">HEX</div><p class="identity-sub">Meta: <strong>19.683</strong> · 6 direções</p></div>
     <div class="stats" aria-label="Placar"><div class="score"><small>Pontuação</small><strong id="score">0</strong></div><div class="score best"><small>Recorde</small><strong id="best">0</strong></div></div>
   </header>
   <div class="toolbar"><div class="toolbar-caption">Combine <b>potências de 3</b></div>
@@ -93,7 +94,7 @@ button:focus-visible{outline:2px solid var(--mint);outline-offset:3px}
       <button class="icon-button" id="help-btn" title="Como jogar" aria-label="Como jogar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 4.1 2c-1.15.85-1.6 1.3-1.6 2.5M12 17h.01"/></svg></button>
     </div>
   </div>
-  <div class="board-wrap"><svg id="board" viewBox="30 30 540 540" role="img" aria-label="Tabuleiro com 19 casas hexagonais"><title>HEX 2187 - tabuleiro interativo</title><g id="cell-layer"></g><g id="tile-layer"></g></svg></div>
+  <div class="board-wrap"><svg id="board" viewBox="30 30 540 540" role="img" aria-label="Tabuleiro com 19 casas hexagonais"><title>HEX 19683 - tabuleiro interativo</title><g id="cell-layer"></g><g id="tile-layer"></g></svg></div>
   <div class="bottom"><span><strong id="tile-count">2 peças</strong> · <span id="moves">0</span> jogadas</span><span class="bottom-note">Teclado <strong>7 9 4 6 1 3</strong> · Celular: toque e segure</span></div>
 </main></div>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
@@ -102,7 +103,7 @@ button:focus-visible{outline:2px solid var(--mint);outline-offset:3px}
 <script>
 (()=>{'use strict';
   const NS='http://www.w3.org/2000/svg';
-  const storageKey='hex2187_v1', previousStorageKey='hex2048_v1';
+  const storageKey='hex2187_v1', previousStorageKey='hex2048_v1', GOAL=19683;
   const config={angles:[-120,-60,0,60,120,180],labels:['Noroeste','Nordeste','Leste','Sudeste','Sudoeste','Oeste'],keys:['7','9','6','3','1','4']};
   const keyDirections=Object.fromEntries(config.keys.map((key,index)=>[key,index]));
   const vectors=[[0,-1],[1,-1],[1,0],[0,1],[-1,1],[-1,0]];
@@ -128,12 +129,12 @@ button:focus-visible{outline:2px solid var(--mint);outline-offset:3px}
   const LINES=config.angles.map((_,d)=>lanesFor(d));
   function isPowerOfThree(v){if(!Number.isSafeInteger(v)||v<3)return false;while(v>1&&v%3===0)v/=3;return v===1;}
   function validCells(s){return s?.cells&&coords.every(p=>s.cells[p.id]===0||isPowerOfThree(s.cells[p.id]));}
-  function safeSave(){try{localStorage.setItem(storageKey,JSON.stringify({session,best,soundOn}));}catch(e){}}
+  function safeSave(){try{localStorage.setItem(storageKey,JSON.stringify({session,best,soundOn,goal:GOAL}));}catch(e){}}
   function readStorage(){
     try{
       const raw=JSON.parse(localStorage.getItem(storageKey));
       const legacy=raw?null:JSON.parse(localStorage.getItem(previousStorageKey));
-      if(validCells(raw?.session))session={cells:Object.fromEntries(coords.map(p=>[p.id,raw.session.cells[p.id]])),score:Math.max(0,Number(raw.session.score)||0),moves:Math.max(0,Number(raw.session.moves)||0),won:!!raw.session.won,undo:null};
+      if(validCells(raw?.session))session={cells:Object.fromEntries(coords.map(p=>[p.id,raw.session.cells[p.id]])),score:Math.max(0,Number(raw.session.score)||0),moves:Math.max(0,Number(raw.session.moves)||0),won:raw.goal===GOAL&&!!raw.session.won,undo:null};
       if(Number.isFinite(raw?.best))best=Math.max(0,Math.floor(raw.best));
       const oldSound=raw?.soundOn??legacy?.soundOn;
       if(typeof oldSound==='boolean')soundOn=oldSound;
@@ -199,7 +200,7 @@ button:focus-visible{outline:2px solid var(--mint);outline-offset:3px}
       }
     }
     setTimeout(()=>{const created=spawn(session.cells);drawBoard(created,out.mergedIds);safeSave();animationBusy=false;
-      if(!session.won&&Object.values(session.cells).some(v=>v>=2187)){session.won=true;safeSave();sound(850,'merge');openModal('won');}
+      if(!session.won&&Object.values(session.cells).some(v=>v>=GOAL)){session.won=true;safeSave();sound(850,'merge');openModal('won');}
       else if(!legalMove(session.cells))openModal('lost');
     },160);
   }
@@ -221,14 +222,14 @@ button:focus-visible{outline:2px solid var(--mint);outline-offset:3px}
     modalOpen=true;const title=document.getElementById('modal-title'),icon=document.getElementById('modal-icon'),copy=document.getElementById('modal-copy'),help=document.getElementById('modal-help'),actions=document.getElementById('modal-actions');
     actions.replaceChildren();help.hidden=true;help.innerHTML='';let heading='',message='',symbol='✦',buttons=[];
     if(kind==='help'){
-      heading='Como jogar';symbol='?';message='Combine potências de 3 até atingir 2187 nas 19 casas hexagonais.';
+      heading='Como jogar';symbol='?';message='Combine potências de 3 até atingir 19.683 nas 19 casas hexagonais.';
       help.hidden=false;help.innerHTML='<li><b>Teclado numérico:</b> 7 = noroeste; 9 = nordeste; 6 = leste; 3 = sudeste; 1 = sudoeste; 4 = oeste. Também funcionam os números da fileira superior.</li><li><b>Celular:</b> toque e segure o tabuleiro para mostrar as seis setas ao redor do dedo. Arraste na direção desejada para mover as peças. Soltar sem arrastar cancela a ação.</li><li>Um gesto rápido de deslizar também funciona no tabuleiro.</li><li>Duas peças iguais geram a próxima potência de 3: 3 e 3 viram 9, 9 e 9 viram 27. Cada peça se funde uma única vez por movimento, e surge uma nova peça após a jogada.</li><li>Use <b>Desfazer</b> para voltar a última jogada. Seu progresso e recorde ficam salvos neste navegador.</li>';
       buttons=[['Entendi',closeModal,'primary']];
     }else if(kind==='restart'){
       heading='Começar outra partida?';symbol='↻';message='Seu progresso atual será reiniciado, mas seu recorde será mantido.';
       buttons=[['Cancelar',closeModal,'secondary'],['Reiniciar',()=>{closeModal();resetGame();},'primary']];
     }else if(kind==='won'){
-      heading='Você chegou a 2187!';symbol='★';message=`Você alcançou o objetivo e marcou ${session.score.toLocaleString('pt-BR')} pontos. Pode continuar jogando!`;
+      heading='Você chegou a 19.683!';symbol='★';message=`Você alcançou o objetivo e marcou ${session.score.toLocaleString('pt-BR')} pontos. Pode continuar jogando!`;
       buttons=[['Continuar jogando',closeModal,'primary'],['Novo jogo',()=>{closeModal();resetGame();},'secondary']];
     }else if(kind==='lost'){
       heading='Fim de jogo';symbol='◆';message=`Sem movimentos disponíveis. Você fez ${session.score.toLocaleString('pt-BR')} pontos em ${session.moves} jogadas.`;
