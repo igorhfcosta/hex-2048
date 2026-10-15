@@ -111,7 +111,12 @@ body{--bg:#080713;--panel:#141028;--panel2:#211737;--line:#544078;--text:#fff8ff
   const NS='http://www.w3.org/2000/svg';
   const params=new URLSearchParams(window.location.search);
   const boardCount=[7,19].includes(Number(params.get('size')))?Number(params.get('size')):19;
-  const boardRadius={7:1,19:2,37:3,61:4}[boardCount];
+  // As URLs antigas não devem reativar modos ou tamanhos removidos.
+  const cleanSearch=boardCount===7?'?size=7':'';
+  if(window.location.search!==cleanSearch && window.history?.replaceState){
+    window.history.replaceState(null,'',window.location.pathname+cleanSearch+window.location.hash);
+  }
+  const boardRadius={7:1,19:2}[boardCount];
   const gameMode='free', GOAL=3072;
   const storageKey='hex24576_free_'+boardCount+'_v1',previousStorageKey='hex2187_v1';
   const randomUnit=()=>Math.random();
@@ -329,7 +334,13 @@ body{--bg:#080713;--panel:#141028;--panel2:#211737;--line:#544078;--text:#fff8ff
   window.addEventListener('beforeinstallprompt',event=>{event.preventDefault();deferredInstall=event;document.getElementById('install-btn').hidden=false;});
   window.addEventListener('appinstalled',()=>{deferredInstall=null;document.getElementById('install-btn').hidden=true;});
   document.getElementById('install-btn').addEventListener('click',async()=>{if(!deferredInstall)return;const e=deferredInstall;deferredInstall=null;document.getElementById('install-btn').hidden=true;try{await e.prompt();}catch(_){}});
-  if('serviceWorker' in navigator && location.protocol==='https:')window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+  if('serviceWorker' in navigator && location.protocol==='https:'){
+    // Um novo cache de PWA deve substituir a interface anterior sem ação manual.
+    navigator.serviceWorker.addEventListener('controllerchange',()=>location.reload());
+    window.addEventListener('load',()=>{
+      navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{});
+    });
+  }
   document.getElementById('achievements-btn').addEventListener('click',()=>openModal('achievements'));
   document.getElementById('restart-btn').addEventListener('click',()=>openModal('restart'));
   undoBtn.addEventListener('click',undo);
