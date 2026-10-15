@@ -22,8 +22,7 @@ button:focus-visible{outline:2px solid var(--mint);outline-offset:3px}
 .hud{width:100%;display:flex;align-items:center;justify-content:space-between;gap:clamp(8px,2vw,18px)}
 .identity{min-width:0;flex:1 1 auto}
 .identity-title{display:flex;align-items:baseline;gap:clamp(5px,1.2vw,10px);font-size:clamp(32px,7vw,55px);line-height:.95;font-weight:900;letter-spacing:-2px;white-space:nowrap}
-.identity-title #shape-name{color:var(--text);font-size:1em;letter-spacing:inherit}
-.identity-title #goal-name{color:var(--mint);font-size:.58em;font-weight:900;letter-spacing:-.04em}
+.identity-title span{color:var(--mint);font-size:.58em;font-weight:900;letter-spacing:-.04em}
 .variants{display:flex;align-items:center;justify-content:center;gap:5px;width:100%;flex-wrap:wrap}
 .variants select,.variants button{appearance:none;color:var(--text);background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:5px 7px;font-size:clamp(9px,2.3vw,12px);font-weight:700;min-height:29px}
 .variants button:hover,.variants select:focus-visible{border-color:var(--mint)}
@@ -85,7 +84,7 @@ body{--bg:#080713;--panel:#141028;--panel2:#211737;--line:#544078;--text:#fff8ff
 </head>
 <body>
 <div class="app"><main class="game" aria-label="HEX 3072">
-  <header class="hud"><div class="identity"><div class="identity-title"><span id="shape-name">HEX</span> <span id="goal-name">3072</span></div></div>
+  <header class="hud"><div class="identity"><div class="identity-title">HEX <span>3072</span></div></div>
     <div class="stats" aria-label="Placar"><div class="score"><small>Pontuação</small><strong id="score">0</strong></div><div class="score best"><small>Recorde</small><strong id="best">0</strong></div></div>
   </header>
   <div class="toolbar">
@@ -98,8 +97,7 @@ body{--bg:#080713;--panel:#141028;--panel2:#211737;--line:#544078;--text:#fff8ff
   </div>
   <div class="board-wrap"><svg id="board" viewBox="30 30 540 540" role="img" aria-label="Tabuleiro hexagonal"><title>HEX 3072 - tabuleiro interativo</title><g id="cell-layer"></g><g id="tile-layer"></g><g id="fx-layer" pointer-events="none"></g></svg></div>
   <div class="variants" aria-label="Modos e opções">
-    <select id="shape-select" aria-label="Formato das peças"><option value="hex">Hexágonos</option><option value="triangle">Triângulos</option></select>
-    <select id="size-select" aria-label="Tamanho do tabuleiro"><option value="7">7 casas</option><option value="19">19 casas</option><option value="37">37 casas</option><option value="61">61 casas</option></select>
+    <select id="size-select" aria-label="Tamanho do tabuleiro"><option value="7">7 casas</option><option value="19">19 casas</option></select>
     <button id="achievements-btn" type="button">Conquistas</button>
     <button id="leaderboard-btn" type="button">Ranking</button>
     <button id="install-btn" type="button" hidden>Instalar app</button>
@@ -112,39 +110,15 @@ body{--bg:#080713;--panel:#141028;--panel2:#211737;--line:#544078;--text:#fff8ff
 (()=>{'use strict';
   const NS='http://www.w3.org/2000/svg';
   const params=new URLSearchParams(window.location.search);
-  const shapeMode=params.get('shape')==='triangle'?'triangle':'hex';
-  const isTriangle=shapeMode==='triangle';
-  const allowedSizes=isTriangle?[16,25,36,49]:[7,19,37,61];
-  const boardCount=allowedSizes.includes(Number(params.get('size')))?Number(params.get('size')):(isTriangle?25:19);
-  const boardRadius=isTriangle?0:({7:1,19:2,37:3,61:4}[boardCount]);
-  const gameMode='free',GOAL=isTriangle?1024:3072;
-  // Preserva a chave de salvamento original do modo hexagonal.
-  const storageKey=isTriangle?'tri1024_free_'+boardCount+'_v1':'hex24576_free_'+boardCount+'_v1';
-  const previousStorageKey='hex2187_v1';
-  const achievementKey=isTriangle?'tri1024_achievements_v1':'hex24576_achievements_v1';
+  const boardCount=[7,19].includes(Number(params.get('size')))?Number(params.get('size')):19;
+  const boardRadius={7:1,19:2,37:3,61:4}[boardCount];
+  const gameMode='free', GOAL=3072;
+  const storageKey='hex24576_free_'+boardCount+'_v1',previousStorageKey='hex2187_v1';
   const randomUnit=()=>Math.random();
-  const sizeSelect=document.getElementById('size-select'),shapeSelect=document.getElementById('shape-select');
-  function changeMode(shape,size){
-    const q=new URLSearchParams();
-    if(shape==='triangle')q.set('shape','triangle');
-    if(size!==(shape==='triangle'?25:19))q.set('size',String(size));
-    location.assign(location.pathname+(q.size?'?'+q.toString():''));
-  }
-  shapeSelect.value=shapeMode;
-  shapeSelect.addEventListener('change',e=>changeMode(e.target.value,e.target.value==='triangle'?25:19));
-  sizeSelect.replaceChildren(...allowedSizes.map(n=>{
-    const opt=document.createElement('option');opt.value=String(n);opt.textContent=n+' casas';return opt;
-  }));
-  sizeSelect.value=String(boardCount);
-  sizeSelect.addEventListener('change',e=>changeMode(shapeMode,Number(e.target.value)));
-  document.getElementById('shape-name').textContent=isTriangle?'TRI':'HEX';
-  document.getElementById('goal-name').textContent=String(GOAL);
-  document.querySelector('main.game').setAttribute('aria-label',isTriangle?'TRI 1024':'HEX 3072');
-  document.querySelector('#board title').textContent=isTriangle?'TRI 1024 - tabuleiro triangular':'HEX 3072 - tabuleiro hexagonal';
-  document.getElementById('board').setAttribute('aria-label',isTriangle?'Tabuleiro triangular':'Tabuleiro hexagonal');
-  document.title=isTriangle?'TRI 1024 · Jogo triangular':'HEX 3072 · Jogo hexagonal';
-  // Regras e coleções Firestore existentes são exclusivas do modo hexagonal.
-  document.getElementById('leaderboard-btn').hidden=isTriangle;
+  document.getElementById('size-select').value=String(boardCount);
+  document.getElementById('size-select').addEventListener('change',e=>{
+    const size=e.target.value;location.assign(location.pathname+(size==='19'?'':'?size='+size));
+  });
   const config={angles:[-120,-60,0,60,120,180],labels:['Noroeste','Nordeste','Leste','Sudeste','Sudoeste','Oeste'],keys:['7','9','6','3','1','4']};
   const keyDirections=Object.fromEntries(config.keys.map((key,index)=>[key,index]));
   const vectors=[[0,-1],[1,-1],[1,0],[0,1],[-1,1],[-1,0]];
@@ -152,68 +126,40 @@ body{--bg:#080713;--panel:#141028;--panel2:#211737;--line:#544078;--text:#fff8ff
   const scoreEl=document.getElementById('score'),bestEl=document.getElementById('best'),movesEl=document.getElementById('moves'),undoBtn=document.getElementById('undo-btn');
   const overlay=document.getElementById('overlay'),toastEl=document.getElementById('toast');
   let session=null,best=0,soundOn=false,audioContext=null,modalOpen=false,toastTimer=null,animationBusy=false;
-  const achievements=isTriangle?
-    [['first','Primeira fusão','Faça 1 + 1 = 2'],['32','Primeiros passos','Alcance 32'],['256','Potência crescente','Alcance 256'],['1024','Meta alcançada','Alcance 1.024'],['2048','Além da meta','Alcance 2.048'],['4096','Mestre triangular','Alcance 4.096'],['8192','Lenda triangular','Alcance 8.192'],['100moves','Persistência','Faça 100 jogadas'],['1000pts','Pontuador','Some 1.000 pontos']]:
-    [['first','Primeira fusão','Realize a primeira fusão'],['96','Primeiros passos','Alcance 96'],['768','Potência crescente','Alcance 768'],['3072','Meta alcançada','Alcance 3.072'],['6144','Além da meta','Alcance 6.144'],['12288','Hex mestre','Alcance 12.288'],['24576','Lenda hexagonal','Alcance 24.576'],['100moves','Persistência','Faça 100 jogadas'],['1000pts','Pontuador','Faça 1.000 pontos']];
+  const achievements=[['first','Primeira fusão','Realize a primeira fusão'],['96','Primeiros passos','Alcance 96'],['768','Potência crescente','Alcance 768'],['3072','Meta alcançada','Alcance 3.072'],['6144','Além da meta','Alcance 6.144'],['12288','Hex mestre','Alcance 12.288'],['24576','Lenda hexagonal','Alcance 24.576'],['100moves','Persistência','Faça 100 jogadas'],['1000pts','Pontuador','Faça 1.000 pontos']];
   let unlocked=new Set();
-  try{unlocked=new Set(JSON.parse(localStorage.getItem(achievementKey)||'[]'));}catch(_){}
-  function unlock(id){if(unlocked.has(id))return;unlocked.add(id);try{localStorage.setItem(achievementKey,JSON.stringify([...unlocked]));}catch(_){}const label=achievements.find(a=>a[0]===id)?.[1];if(label)toast('Conquista: '+label);}
+  try{unlocked=new Set(JSON.parse(localStorage.getItem('hex24576_achievements_v1')||'[]'));}catch(_){}
+  function unlock(id){if(unlocked.has(id))return;unlocked.add(id);try{localStorage.setItem('hex24576_achievements_v1',JSON.stringify([...unlocked]));}catch(_){}const label=achievements.find(a=>a[0]===id)?.[1];if(label)toast('Conquista: '+label);}
   document.body.dataset.theme='neon';
   // Apenas marcos e conquistas: sem partículas ou animações SVG por fusão.
   function celebrate(out){
     const fx=document.getElementById('fx-layer');
     for(const id of out.mergedIds){const p=cellMap[id];if(!p)continue;
-      const effectSize=isTriangle?triangleSide*.3:HR*.8;
-      for(let i=0;i<7;i++){const angle=i*Math.PI*2/7,c=node('circle',{cx:p.x,cy:p.y,r:Math.max(2,(isTriangle?triangleSide:HR)*.07),fill:'#b1ffde',opacity:.9});fx.appendChild(c);
-        const ani=c.animate([{transform:'translate(0,0) scale(1)',opacity:1},{transform:`translate(${Math.cos(angle)*effectSize}px,${Math.sin(angle)*effectSize}px) scale(.2)`,opacity:0}],{duration:360,easing:'ease-out'});ani.onfinish=()=>c.remove();}
+      for(let i=0;i<7;i++){const angle=i*Math.PI*2/7,c=node('circle',{cx:p.x,cy:p.y,r:Math.max(2,HR*.07),fill:'#b1ffde',opacity:.9});fx.appendChild(c);
+        const ani=c.animate([{transform:'translate(0,0) scale(1)',opacity:1},{transform:`translate(${Math.cos(angle)*HR*.8}px,${Math.sin(angle)*HR*.8}px) scale(.2)`,opacity:0}],{duration:360,easing:'ease-out'});ani.onfinish=()=>c.remove();}
     }
     const highest=Math.max(0,...out.mergedIds.map(id=>session.cells[id]));
-    for(const goal of (isTriangle?[256,1024,2048,4096]:[768,3072,6144,12288]))if(highest>=goal&&!session.milestones.includes(goal)){session.milestones.push(goal);toast('Novo marco: '+goal.toLocaleString('pt-BR')+'!');}
+    for(const goal of [768,3072,6144,12288])if(highest>=goal&&!session.milestones.includes(goal)){session.milestones.push(goal);toast('Novo marco: '+goal.toLocaleString('pt-BR')+'!');}
   }
-  function evaluateAwards(out){if(out.mergedIds.length)unlock('first');const max=Math.max(...Object.values(session.cells));for(const goal of (isTriangle?[32,256,1024,2048,4096,8192]:[96,768,3072,6144,12288,24576]))if(max>=goal)unlock(String(goal));if(session.moves>=100)unlock('100moves');if(session.score>=1000)unlock('1000pts');}
-  function mergeAudio(out){if(!out.mergedIds.length){sound(260,'move');return;}const peak=Math.max(...out.mergedIds.map(id=>session.cells[id]));const tier=Math.round(Math.log(peak/(isTriangle?1:3))/Math.log(2));sound(Math.min(1050,190*Math.pow(2,tier/12)),'merge');}
+  function evaluateAwards(out){if(out.mergedIds.length)unlock('first');const max=Math.max(...Object.values(session.cells));for(const goal of [96,768,3072,6144,12288,24576])if(max>=goal)unlock(String(goal));if(session.moves>=100)unlock('100moves');if(session.score>=1000)unlock('1000pts');}
+  function mergeAudio(out){if(!out.mergedIds.length){sound(260,'move');return;}const peak=Math.max(...out.mergedIds.map(id=>session.cells[id]));const tier=Math.round(Math.log(peak/3)/Math.log(2));sound(Math.min(1050,190*Math.pow(2,tier/12)),'merge');}
   const coords=[];
   function node(name,attrs={},text){const el=document.createElementNS(NS,name);for(const [k,v] of Object.entries(attrs))el.setAttribute(k,String(v));if(text!==undefined)el.textContent=text;return el;}
-  const HR=isTriangle?0:157/(boardRadius+1);
-  const triangleN=isTriangle?Math.round(Math.sqrt(boardCount)):0;
-  const triangleSide=isTriangle?440/triangleN:0,triHeight=triangleSide*Math.sqrt(3)/2;
-  function gridPoint(i,j){
-    return {x:300-triangleN*triangleSide/2+triangleSide*(i+j/2),
-            y:300+triangleN*triHeight/3-triHeight*j};
-  }
-  function addTriangle(i,j,down,vertices){
-    const x=vertices.reduce((s,p)=>s+p.x,0)/3,y=vertices.reduce((s,p)=>s+p.y,0)/3;
-    coords.push({id:(down?'d':'u')+i+','+j,i,j,down,x,y,
-      points:vertices.map(p=>[(p.x-x)*.93,(p.y-y)*.93])});
-  }
-  if(isTriangle){
-    // n² triângulos equiláteros sem sobreposição, alternando para cima e para baixo.
-    for(let j=0;j<triangleN;j++)for(let i=0;i<triangleN-j;i++){
-      addTriangle(i,j,false,[gridPoint(i,j),gridPoint(i+1,j),gridPoint(i,j+1)]);
-      if(i+j<triangleN-1)
-        addTriangle(i,j,true,[gridPoint(i+1,j),gridPoint(i+1,j+1),gridPoint(i,j+1)]);
-    }
-  }else{
-    for(let q=-boardRadius;q<=boardRadius;q++)
-      for(let r=-boardRadius;r<=boardRadius;r++)
-        if(Math.abs(q+r)<=boardRadius)
-          coords.push({id:`${q},${r}`,q,r,x:300+Math.sqrt(3)*HR*(q+r/2),y:300+1.5*HR*r});
-  }
+  const HR=157/(boardRadius+1);
+  for(let q=-boardRadius;q<=boardRadius;q++)for(let r=-boardRadius;r<=boardRadius;r++)if(Math.abs(q+r)<=boardRadius)coords.push({id:`${q},${r}`,q,r,x:300+Math.sqrt(3)*HR*(q+r/2),y:300+1.5*HR*r});
   const cellMap=Object.fromEntries(coords.map(p=>[p.id,p]));
   function lanesFor(d){
-    const parts=new Map(),angle=config.angles[d]*Math.PI/180,dx=Math.cos(angle),dy=Math.sin(angle);
+    const parts=new Map(), angle=config.angles[d]*Math.PI/180,dx=Math.cos(angle),dy=Math.sin(angle);
     const [dq,dr]=vectors[d];
     for(const p of coords){
-      const lane=isTriangle?
-        (d===2||d===5?'j'+p.j:d===1||d===4?'i'+p.i:'s'+(p.i+p.j+(p.down?1:0))):
-        (dr===0?'r'+p.r:dq===0?'q'+p.q:'s'+(p.q+p.r));
+      const lane=dr===0?`r${p.r}`:dq===0?`q${p.q}`:`s${p.q+p.r}`;
       if(!parts.has(lane))parts.set(lane,[]);
       parts.get(lane).push(p);
     }
     return [...parts.values()].map(line=>line.sort((a,b)=>(b.x-a.x)*dx+(b.y-a.y)*dy).map(p=>p.id));
   }
   const LINES=config.angles.map((_,d)=>lanesFor(d));
-  function isValidTile(v){if(!Number.isSafeInteger(v)||v<(isTriangle?1:3))return false;if(!isTriangle){if(v%3!==0)return false;v/=3;}while(v>1&&v%2===0)v/=2;return v===1;}
+  function isValidTile(v){if(!Number.isSafeInteger(v)||v<3||v%3!==0)return false;v/=3;while(v>1&&v%2===0)v/=2;return v===1;}
   function validCells(s){return s?.cells&&coords.every(p=>s.cells[p.id]===0||isValidTile(s.cells[p.id]));}
   function safeSave(){try{localStorage.setItem(storageKey,JSON.stringify({session,best,soundOn,goal:GOAL}));}catch(e){}}
   function readStorage(){
@@ -227,8 +173,8 @@ body{--bg:#080713;--panel:#141028;--panel2:#211737;--line:#544078;--text:#fff8ff
     }catch(e){}
   }
   function emptyCells(){return Object.fromEntries(coords.map(p=>[p.id,0]));}
-  function spawn(cells,forcedValue=null){const spaces=coords.map(p=>p.id).filter(id=>!cells[id]);if(!spaces.length)return null;const id=spaces[Math.floor(randomUnit()*spaces.length)];cells[id]=forcedValue??(randomUnit()<.9?(isTriangle?1:3):(isTriangle?2:6));return id;}
-  function makeSession(){const cells=emptyCells();spawn(cells,isTriangle?1:null);spawn(cells,isTriangle?1:null);return {cells,score:0,moves:0,won:false,undo:null,merges:0,startedAt:Date.now(),milestones:[]};}
+  function spawn(cells){const spaces=coords.map(p=>p.id).filter(id=>!cells[id]);if(!spaces.length)return null;const id=spaces[Math.floor(randomUnit()*spaces.length)];cells[id]=randomUnit()<.9?3:6;return id;}
+  function makeSession(){const cells=emptyCells();spawn(cells);spawn(cells);return {cells,score:0,moves:0,won:false,undo:null,merges:0,startedAt:Date.now(),milestones:[]};}
   function simulate(cells,d){
     const next={...cells};let gained=0,changed=false;const mergedIds=[],paths=[];
     for(const lane of LINES[d]){
@@ -247,14 +193,14 @@ body{--bg:#080713;--panel:#141028;--panel2:#211737;--line:#544078;--text:#fff8ff
   }
   function legalMove(cells){return LINES.some((_,d)=>simulate(cells,d).changed);}
   const colors={3:['#e5f8ee','#193329'],6:['#baf1d6','#153c31'],12:['#83d8d1','#153b43'],24:['#77b9fa','#152f50'],48:['#b09df9','#29224e'],96:['#d98af4','#42254f'],192:['#f5a5bd','#522b44'],384:['#f9b48e','#5d3028'],768:['#ffce7c','#56381b'],1536:['#e8e47b','#3f421f'],3072:['#fef0a4','#5c451b'],6144:['#baffd1','#214934'],12288:['#8cf8ff','#134a50'],24576:['#fcf6ff','#4b2171']};
-  function theme(value){return colors[isTriangle?value*3:value]||['#ffd77d','#55401a'];}
+  function theme(value){return colors[value]||['#ffd77d','#55401a'];}
   function polyPoints(radius,offset=-90){return Array.from({length:6},(_,k)=>{const a=(offset+k*60)*Math.PI/180;return `${(Math.cos(a)*radius).toFixed(3)},${(Math.sin(a)*radius).toFixed(3)}`;}).join(' ');}
-  function shape(fill,isBg=false,p=null){const points=isTriangle?p.points.map(pair=>pair.map(n=>n.toFixed(2)).join(',')).join(' '):polyPoints(HR*.965);return node('polygon',{points,fill,class:isBg?'cell-bg':'tile-shape','stroke-linejoin':'round'});}
+  function shape(fill,isBg=false){return node('polygon',{points:polyPoints(HR*.965),fill,class:isBg?'cell-bg':'tile-shape','stroke-linejoin':'round'});}
   function tileElement(p,value,cls=''){
     const [bg,fg]=theme(value),g=node('g',{class:`tile ${cls}`.trim(),style:`transform-origin:${p.x}px ${p.y}px`});
     g.setAttribute('transform',`translate(${p.x} ${p.y})`);
-    g.appendChild(shape(bg,false,p));
-    const digits=String(value).length,maxFont=isTriangle?Math.max(10,Math.min(23,triangleSide*.22-Math.max(0,digits-2)*2.3)):Math.max(9,Math.min(HR*.69,35-Math.max(0,digits-2)*6));
+    g.appendChild(shape(bg));
+    const digits=String(value).length,maxFont=Math.max(9,Math.min(HR*.69,35-Math.max(0,digits-2)*6));
     g.appendChild(node('text',{'class':'tile-value',x:0,y:1,'font-size':maxFont,fill:fg},String(value)));
     return g;
   }
@@ -262,7 +208,7 @@ body{--bg:#080713;--panel:#141028;--panel2:#211737;--line:#544078;--text:#fff8ff
   const backgroundFragment=document.createDocumentFragment();
   for(const p of coords){
     const group=node('g',{transform:`translate(${p.x} ${p.y})`});
-    group.appendChild(shape('',true,p));
+    group.appendChild(shape('',true));
     backgroundFragment.appendChild(group);
   }
   cellsLayer.appendChild(backgroundFragment);
@@ -299,6 +245,8 @@ body{--bg:#080713;--panel:#141028;--panel2:#211737;--line:#544078;--text:#fff8ff
     }
     setTimeout(()=>{const created=spawn(session.cells);drawBoard(created,out.mergedIds);safeSave();animationBusy=false;
       celebrate(out);evaluateAwards(out);
+      // O placar passa a ser sincronizado em segundo plano após a jogada.
+      window.dispatchEvent(new Event('hex-score-changed'));
       if(!session.won&&Object.values(session.cells).some(v=>v>=GOAL)){session.won=true;safeSave();sound(850,'merge');openModal('won');}
       else if(!legalMove(session.cells))openModal('lost');
     },160);
@@ -324,14 +272,14 @@ body{--bg:#080713;--panel:#141028;--panel2:#211737;--line:#544078;--text:#fff8ff
       help.hidden=false;help.innerHTML=achievements.map(([id,name,desc])=>`<li>${unlocked.has(id)?'✓':'○'} <b>${name}</b>: ${desc}</li>`).join('');
       buttons=[['Fechar',closeModal,'primary']];
     }else if(kind==='help'){
-      heading='Como jogar';symbol='?';message=isTriangle?'Some peças iguais até atingir 1.024 nas '+boardCount+' casas triangulares. Você pode continuar até 8.192.':'Some peças iguais até atingir 3.072 nas '+boardCount+' casas hexagonais. Você pode continuar até 24.576, a conquista lendária.';
-      help.hidden=false;help.innerHTML='<li><b>Teclado numérico:</b> 7 = noroeste; 9 = nordeste; 6 = leste; 3 = sudeste; 1 = sudoeste; 4 = oeste. Também funcionam os números da fileira superior.</li><li><b>Celular:</b> deslize o dedo diretamente sobre o tabuleiro na direção desejada. São seis direções possíveis, sem disco flutuante ou vibração. Um toque sem deslocamento não faz nada.</li><li>Duas peças iguais se somam. No TRI: 1 + 1 = 2, 2 + 2 = 4; no HEX: 3 + 3 = 6, 6 + 6 = 12. A pontuação aumenta apenas pelo valor da nova peça. Cada peça se funde uma única vez por movimento, e surge uma nova peça após a jogada.</li><li>Use <b>Desfazer</b> para voltar a última jogada. Seu progresso e recorde ficam salvos neste navegador.</li>';
+      heading='Como jogar';symbol='?';message='Some peças iguais até atingir 3.072 nas '+boardCount+' casas hexagonais. Você pode continuar até 24.576, a conquista lendária.';
+      help.hidden=false;help.innerHTML='<li><b>Teclado numérico:</b> 7 = noroeste; 9 = nordeste; 6 = leste; 3 = sudeste; 1 = sudoeste; 4 = oeste. Também funcionam os números da fileira superior.</li><li><b>Celular:</b> deslize o dedo diretamente sobre o tabuleiro na direção desejada. São seis direções possíveis, sem disco flutuante ou vibração. Um toque sem deslocamento não faz nada.</li><li>Duas peças iguais se somam: 3 + 3 = 6, 6 + 6 = 12 e 12 + 12 = 24. A pontuação aumenta apenas pelo valor da nova peça. Cada peça se funde uma única vez por movimento, e surge uma nova peça após a jogada.</li><li>Use <b>Desfazer</b> para voltar a última jogada. Seu progresso e recorde ficam salvos neste navegador.</li>';
       buttons=[['Entendi',closeModal,'primary']];
     }else if(kind==='restart'){
       heading='Começar outra partida?';symbol='↻';message='Seu progresso atual será reiniciado, mas seu recorde será mantido.';
       buttons=[['Cancelar',closeModal,'secondary'],['Reiniciar',()=>{closeModal();resetGame();},'primary']];
     }else if(kind==='won'){
-      heading='Você chegou a '+GOAL.toLocaleString('pt-BR')+'!';symbol='★';message=`Você alcançou a meta e marcou ${session.score.toLocaleString('pt-BR')} pontos. Continue jogando para tentar a conquista lendária de ${(isTriangle?8192:24576).toLocaleString('pt-BR')}!`;
+      heading='Você chegou a 3.072!';symbol='★';message=`Você alcançou a meta e marcou ${session.score.toLocaleString('pt-BR')} pontos. Continue jogando para tentar a conquista lendária de 24.576!`;
       buttons=[['Continuar jogando',closeModal,'primary'],['Novo jogo',()=>{closeModal();resetGame();},'secondary']];
     }else if(kind==='lost'){
       heading='Fim de jogo';symbol='◆';message=`Sem movimentos disponíveis. Você fez ${session.score.toLocaleString('pt-BR')} pontos em ${session.moves} jogadas.`;
@@ -390,7 +338,7 @@ body{--bg:#080713;--panel:#141028;--panel2:#211737;--line:#544078;--text:#fff8ff
   overlay.addEventListener('click',event=>{if(event.target===overlay)closeModal();});
   readStorage();if(!session)session=makeSession();if(best<session.score)best=session.score;
   document.querySelectorAll('.sound-waves').forEach(el=>el.style.opacity=soundOn?'1':'.18');
-  window.HEX_GAME_API={snapshot:()=>({mode:'free',shape:shapeMode,rules:'sum-v2',cells:boardCount,score:session.score,moves:session.moves,largest:Math.max(0,...Object.values(session.cells))})};
+  window.HEX_GAME_API={snapshot:()=>({mode:'free',rules:'sum-v2',cells:boardCount,score:session.score,moves:session.moves,largest:Math.max(0,...Object.values(session.cells))})};
   drawBoard();safeSave();fitBoard();window.addEventListener('resize',fitBoard);window.visualViewport?.addEventListener('resize',fitBoard);
 })();
 </script>
