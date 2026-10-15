@@ -1,5 +1,5 @@
 /* HEX 3072 PWA: cache dos arquivos do jogo; versão atualizada para a nova meta. */
-const CACHE='hex-24576-static-v8';
+const CACHE='hex-24576-static-v9';
 const ASSETS=['./','./index.html','./manifest.webmanifest','./icon.svg','./icon-192.png','./icon-512.png','./leaderboard.js','./leaderboard-config.js'];
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting()));
