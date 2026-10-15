@@ -52,4 +52,4 @@ O GitHub Pages utiliza o `index.html` na raiz de `main`, em **Settings → Pages
 
 Quem já tinha alcançado 3.072 na versão por soma continua com a partida e o progresso preservados; a meta anterior não é exigida.
 
-Os tamanhos antigos 37/61 e o modo triangular foram retirados da interface. Dados locais antigos não são apagados. Para atualizar um apelido já publicado, é necessário superar o próprio recorde, conforme as regras atuais do Firestore.
+O jogo oferece exclusivamente 7 e 19 casas. Dados locais de versões anteriores não são apagados. Para atualizar um apelido já publicado, é necessário superar o próprio recorde, conforme as regras atuais do Firestore.
