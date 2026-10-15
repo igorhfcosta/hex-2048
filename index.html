@@ -142,6 +142,7 @@ body{--bg:#080713;--panel:#141028;--panel2:#211737;--line:#544078;--text:#fff8ff
   document.querySelector('main.game').setAttribute('aria-label',isTriangle?'TRI 1024':'HEX 3072');
   document.querySelector('#board title').textContent=isTriangle?'TRI 1024 - tabuleiro triangular':'HEX 3072 - tabuleiro hexagonal';
   document.getElementById('board').setAttribute('aria-label',isTriangle?'Tabuleiro triangular':'Tabuleiro hexagonal');
+  document.title=isTriangle?'TRI 1024 · Jogo triangular':'HEX 3072 · Jogo hexagonal';
   // Regras e coleções Firestore existentes são exclusivas do modo hexagonal.
   document.getElementById('leaderboard-btn').hidden=isTriangle;
   const config={angles:[-120,-60,0,60,120,180],labels:['Noroeste','Nordeste','Leste','Sudeste','Sudoeste','Oeste'],keys:['7','9','6','3','1','4']};
