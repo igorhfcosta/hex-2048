@@ -1,7 +1,7 @@
 {
-  "name": "HEX 3072 e TRI 1024 — quebra-cabeças geométricos",
+  "name": "HEX 3072 — quebra-cabeça hexagonal",
   "short_name": "HEX 3072",
-  "description": "Dois modos de fusão por soma: hexágonos a partir do 3 e triângulos a partir do 1. Seis direções e partidas independentes.",
+  "description": "Funda peças hexagonais iguais nos tabuleiros de 7 ou 19 casas. Ranking automático com os cinco melhores por tamanho.",
   "id": "./",
   "start_url": "./",
   "scope": "./",
